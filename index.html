@@ -1,21 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
-/** --- 1. CONSTANTS & UTILS --- **/
-const LETTER_VALUES = { A:1, B:3, C:3, D:2, E:1, F:4, G:2, H:4, I:1, J:8, K:5, L:1, M:3, N:1, O:1, P:3, Q:10, R:1, S:1, T:1, U:1, V:4, W:4, X:8, Y:4, Z:10, '?':0 };
+/** --- INTERNAL LOGIC (Replacing external files) --- **/
 const TW = new Set([0,7,14,105,119,210,217,224]), DW = new Set([16,28,32,42,48,56,64,70,112,154,160,168,176,182,192,196,208]);
 const TL = new Set([20,24,76,80,84,88,136,140,144,148,200,204]), DL = new Set([3,11,36,38,45,52,59,92,96,98,102,108,116,122,126,128,132,165,172,179,186,188,213,221]);
-
 const SQUARE_TYPE = (i) => TW.has(i)?'tw':DW.has(i)?'dw':TL.has(i)?'tl':DL.has(i)?'dl':null;
 const SQUARE_LABEL = (i) => TW.has(i)?'3W':DW.has(i)?'2W':TL.has(i)?'3L':DL.has(i)?'2L':null;
-
-/** --- 2. GAME LOGIC --- **/
-const checkDict = async (w) => {
-  if (w.length < 2) return true;
-  try {
-    const r = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${w.toLowerCase()}`);
-    return r.ok;
-  } catch { return false; }
-};
 
 const validateMove = async (hookIdx, dir, wordStr, board) => {
   const step = (dir === 'right' || dir === 'left') ? 1 : 15;
@@ -23,11 +12,9 @@ const validateMove = async (hookIdx, dir, wordStr, board) => {
   const hookChar = board[hookIdx]?.letter;
   const wordArr = wordStr.split('');
   const hookPos = wordArr.indexOf(hookChar);
-  
   if (hookPos === -1 && !board.every(t => t === null)) return false;
   const offset = board.every(t => t === null) ? 0 : hookPos;
   const start = isReverse ? hookIdx + (offset * step) : hookIdx - (offset * step);
-
   for (let i = 0; i < wordStr.length; i++) {
     const curr = start + (i * step);
     if (curr < 0 || curr >= 225) return false;
@@ -36,19 +23,7 @@ const validateMove = async (hookIdx, dir, wordStr, board) => {
   return true;
 };
 
-/** --- 3. COMPONENTS --- **/
-
-function Modal({ title, children, onClose }) {
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-box" onClick={e => e.stopPropagation()}>
-        <div className="modal-header"><h3>{title}</h3><button onClick={onClose}>×</button></div>
-        {children}
-      </div>
-    </div>
-  );
-}
-
+/** --- COMPONENTS --- **/
 function BoardView({ board, pendingWord, onPlace, onBack }) {
   const [cursor, setCursor] = useState(null);
   const [dirs, setDirs] = useState([]);
@@ -73,104 +48,85 @@ function BoardView({ board, pendingWord, onPlace, onBack }) {
   };
 
   return (
-    <div className="view overlay">
-      <div className="board-grid">
-        {board.map((tile, i) => (
-          <div key={i} className={`cell ${SQUARE_TYPE(i)||''} ${hooks.includes(i)?'hook':''} ${cursor===i?'active':''}`} onClick={() => handleTap(i)}>
-            {tile ? tile.letter : (i===112?'★':SQUARE_LABEL(i))}
-            {cursor === i && dirs.length > 0 && (
-              <div className="dir-picker">
-                {dirs.map(d => <button key={d} onClick={() => onPlace(i, d)}>{d[0].toUpperCase()}</button>)}
-              </div>
-            )}
-          </div>
-        ))}
+    <div className="board-overlay">
+      <div className="grid-container">
+        <div className="board-grid">
+          {board.map((tile, i) => (
+            <div key={i} className={`cell ${SQUARE_TYPE(i)||''} ${hooks.includes(i)?'is-hook':''} ${cursor===i?'is-active':''}`} onClick={() => handleTap(i)}>
+              {tile ? tile.letter : (i===112?'★':SQUARE_LABEL(i))}
+              {cursor === i && dirs.length > 0 && (
+                <div className="dir-picker">
+                  {dirs.map(d => <button key={d} onClick={() => onPlace(i, d)}>{d[0].toUpperCase()}</button>)}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
-      <div className="footer">
-        <span className={conflict ? "status-err" : ""}>{conflict ? "CONFLICT" : `HOOK "${pendingWord}"`}</span>
-        <button onClick={onBack}>BACK</button>
+      <div className="board-footer">
+        <span className={conflict ? "status-conflict" : ""}>{conflict ? "CONFLICT" : `HOOK "${pendingWord}"`}</span>
+        <button className="back-btn" onClick={onBack}>← BACK</button>
       </div>
     </div>
   );
 }
 
-/** --- 4. MAIN APP --- **/
 export default function App() {
-  const [view, setView] = useState('splash');
-  const [names, setNames] = useState(['PLAYER 1', 'PLAYER 2']);
-  const [scores, setScores] = useState([[], []]);
+  const [view, setView] = useState('game');
   const [board, setBoard] = useState(Array(225).fill(null));
-  const [active, setActive] = useState(0);
+  const [activePlayer, setActivePlayer] = useState("PLAYER 1");
   const [word, setWord] = useState('');
   const [pending, setPending] = useState(null);
 
-  // Persistence
-  useEffect(() => {
-    const saved = localStorage.getItem('scrabble_ref_v1');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      setNames(parsed.names); setScores(parsed.scores); setBoard(parsed.board); setActive(parsed.active);
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('scrabble_ref_v1', JSON.stringify({ names, scores, board, active }));
-  }, [names, scores, board, active]);
-
   const handlePlace = (idx, dir) => {
+    // Basic placement visual logic
     const newBoard = [...board];
-    // Simplified placement logic for demonstration
     newBoard[idx] = { letter: pending[0] };
     setBoard(newBoard);
-    setScores(s => { const n = [...s]; n[active].push({ w: pending, s: 10 }); return n; });
     setPending(null); setWord('');
   };
 
   return (
-    <div className="app-root">
+    <div className="app">
       <style>{`
-        :root { --gold: #c9a84c; --ink: #16110a; --cream: #f4ead6; --red: #c0392b; --green: #2e7d4f; }
-        body, html { margin: 0; padding: 0; background: var(--ink); color: var(--cream); font-family: sans-serif; }
-        .app-root { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .view { width: 100%; max-width: 500px; padding: 20px; text-align: center; }
-        .overlay { position: fixed; inset: 0; background: var(--ink); z-index: 100; }
-        .board-grid { display: grid; grid-template-columns: repeat(15, 1fr); gap: 2px; background: #0e2018; padding: 5px; }
-        .cell { aspect-ratio: 1; background: var(--green); display: flex; align-items: center; justify-content: center; font-size: 8px; position: relative; cursor: pointer; }
+        :root { --gold: #c9a84c; --ink: #111a10; --cream: #f4ead6; --red: #c0392b; --green: #1e5c35; }
+        body { margin: 0; background: var(--ink); color: var(--cream); font-family: sans-serif; overflow: hidden; }
+        .app { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .input-area { text-align: center; }
+        input { background: #222; border: 1px solid #444; color: white; padding: 15px; font-size: 20px; margin: 10px; border-radius: 4px; }
+        button { background: var(--gold); border: none; padding: 15px 30px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+        
+        .board-overlay { position: fixed; inset: 0; background: var(--ink); z-index: 100; display: flex; flex-direction: column; }
+        .grid-container { flex: 1; display: flex; align-items: center; justify-content: center; padding: 10px; }
+        .board-grid { display: grid; grid-template-columns: repeat(15, 1fr); gap: 2px; background: #0e2018; padding: 5px; width: min(95vw, 500px); }
+        .cell { aspect-ratio: 1; background: var(--green); display: flex; align-items: center; justify-content: center; font-size: 8px; position: relative; border-radius: 2px; }
         .tw { background: #7d1e1e; } .dw { background: #7a3535; } .tl { background: #1a3d6b; } .dl { background: #1e4f82; }
-        .hook { border: 2px solid var(--gold); }
-        .active { background: var(--gold); color: black; z-index: 5; }
-        .footer { position: fixed; bottom: 0; width: 100%; max-width: 500px; padding: 20px; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; }
-        .status-err { color: var(--red); font-weight: 900; animation: shake 0.2s ease-in-out 3; }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
-        .dir-picker { position: absolute; bottom: 110%; display: flex; gap: 4px; }
-        .dir-picker button { background: var(--gold); border: none; padding: 8px; font-weight: bold; border-radius: 4px; }
-        input { background: #222; border: 1px solid #444; color: white; padding: 12px; font-size: 18px; margin-bottom: 10px; width: 80%; }
-        button { background: var(--gold); border: none; padding: 12px 24px; cursor: pointer; font-weight: bold; }
+        .is-hook { box-shadow: inset 0 0 0 2px var(--gold); }
+        .is-active { background: var(--gold); color: black; z-index: 5; }
+        
+        .board-footer { padding: 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.4); }
+        .status-conflict { color: var(--red) !important; font-weight: 900; animation: shake 0.2s ease-in-out 3; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+        
+        .dir-picker { position: absolute; bottom: 120%; display: flex; gap: 4px; background: rgba(0,0,0,0.8); padding: 5px; border-radius: 4px; }
+        .dir-picker button { padding: 8px 12px; }
+        .back-btn { background: #333; color: white; }
       `}</style>
 
-      {view === 'splash' && (
-        <div className="view">
-          <h1>SCRABBLE REF</h1>
-          <button onClick={() => setView('game')}>NEW GAME</button>
-        </div>
-      )}
+      <div className="input-area">
+        <h1>{activePlayer}</h1>
+        <input value={word} onChange={e => setWord(e.target.value.toUpperCase())} placeholder="TYPE WORD..." />
+        <br/>
+        <button onClick={() => setPending(word)}>VIEW BOARD</button>
+      </div>
 
-      {view === 'game' && (
-        <div className="view">
-          <h2>{names[active]}'s TURN</h2>
-          <input value={word} onChange={e => setWord(e.target.value.toUpperCase())} placeholder="ENTER WORD" />
-          <br/>
-          <button onClick={() => setPending(word)}>PLACE ON BOARD</button>
-
-          {pending && (
-            <BoardView 
-              board={board} 
-              pendingWord={pending} 
-              onBack={() => setPending(null)}
-              onPlace={handlePlace}
-            />
-          )}
-        </div>
+      {pending && (
+        <BoardView 
+          board={board} 
+          pendingWord={pending} 
+          onBack={() => setPending(null)}
+          onPlace={handlePlace}
+        />
       )}
     </div>
   );
