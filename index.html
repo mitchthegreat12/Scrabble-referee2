@@ -6,7 +6,6 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Pro Scrabble Referee</title>
-    <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/5/5d/Scrabble_tile_S.png">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -33,10 +32,17 @@
             font-weight: 900; 
             position: relative;
             text-transform: uppercase;
+            color: #000;
         }
-        .cell.tw { background: #ff4d4d; } .cell.dw { background: #ffb3b3; }
-        .cell.tl { background: #3385ff; } .cell.dl { background: #b3d1ff; }
-        .cell.tile { background: #f5e6c8; color: #000; border-radius: 2px; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.2); }
+        /* The Board Colors */
+        .cell.tw { background: #ff4d4d; } .cell.tw::after { content: '3W'; font-size: 8px; color: white; }
+        .cell.dw { background: #ffb3b3; } .cell.dw::after { content: '2W'; font-size: 8px; color: black; }
+        .cell.tl { background: #3385ff; } .cell.tl::after { content: '3L'; font-size: 8px; color: white; }
+        .cell.dl { background: #b3d1ff; } .cell.dl::after { content: '2L'; font-size: 8px; color: black; }
+        .cell.center { background: #ffb3b3; } .cell.center::after { content: '★'; font-size: 12px; color: black; }
+        
+        .cell.tile { background: #f5e6c8; color: #000; border-radius: 2px; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.2); z-index: 2; }
+        .cell.tile::after { content: ''; } /* Hides the 3W/2L text when a tile is placed */
         
         .controls { flex: 1; padding: 20px; display: flex; flex-direction: column; justify-content: center; gap: 10px; }
         .status-area { text-align: center; margin-bottom: 10px; }
@@ -44,20 +50,36 @@
         .error-text { color: #ff4d4d; font-weight: 600; font-size: 14px; margin-top: 5px; height: 18px; transition: opacity 0.3s; }
         
         .btn { width: 100%; padding: 18px; border-radius: 12px; border: none; font-family: 'Montserrat'; font-weight: 900; font-size: 16px; cursor: pointer; text-transform: uppercase; }
-        .btn-action { background: #7ab648; color: #fff; }
         .btn-cancel { background: transparent; color: #c4a265; border: 2px solid #c4a265; margin-top: 5px; }
     </style>
 </head>
 <body>
     <div id="root"></div>
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState } = React;
+
+        // Scrabble Board Layout Data
+        const TW = new Set([0, 7, 14, 105, 119, 210, 217, 224]);
+        const DW = new Set([16, 28, 32, 42, 48, 56, 64, 70, 154, 160, 168, 176, 182, 192, 196, 208]);
+        const TL = new Set([20, 24, 76, 80, 84, 88, 136, 140, 144, 148, 200, 204]);
+        const DL = new Set([3, 11, 36, 38, 45, 52, 59, 92, 96, 98, 102, 108, 116, 122, 126, 128, 132, 165, 172, 179, 186, 188, 213, 221]);
+        const CENTER = 112;
 
         const ScrabbleApp = () => {
             const [board, setBoard] = useState(Array(225).fill(null));
-            const [mode, setMode] = useState('IDLE'); // IDLE or HOOKING
+            const [mode, setMode] = useState('IDLE');
             const [hookWord, setHookWord] = useState("");
             const [error, setError] = useState("");
+
+            const getCellClass = (i, tile) => {
+                if (tile) return 'cell tile';
+                if (i === CENTER) return 'cell center';
+                if (TW.has(i)) return 'cell tw';
+                if (DW.has(i)) return 'cell dw';
+                if (TL.has(i)) return 'cell tl';
+                if (DL.has(i)) return 'cell dl';
+                return 'cell';
+            };
 
             const handleCellClick = (index) => {
                 if (mode === 'IDLE') {
@@ -80,7 +102,6 @@
                 for (let i = 0; i < hookWord.length; i++) {
                     const currentIndex = direction ? startIndex + i : startIndex + (i * 15);
                     
-                    // Boundary check
                     if (currentIndex >= 225 || (direction && Math.floor(currentIndex/15) !== Math.floor(startIndex/15))) {
                         showError("WORD GOES OFF BOARD");
                         return;
@@ -104,14 +125,14 @@
 
             const showError = (msg) => {
                 setError(msg);
-                setTimeout(() => setError(""), 3000); // Disappears after 3 seconds
+                setTimeout(() => setError(""), 3000);
             };
 
             return (
                 <div className="main-container">
                     <div className="board">
                         {board.map((tile, i) => (
-                            <div key={i} className={`cell ${tile ? 'tile' : ''}`} onClick={() => handleCellClick(i)}>
+                            <div key={i} className={getCellClass(i, tile)} onClick={() => handleCellClick(i)}>
                                 {tile}
                             </div>
                         ))}
