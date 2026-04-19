@@ -5,255 +5,394 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Pro Scrabble Referee</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;900&display=swap" rel="stylesheet">
+    <title>Pro Scrabble Referee v28</title>
+    
+    <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/5/5d/Scrabble_tile_S.png">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;900&family=Playfair+Display:wght@900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
     <style>
         body { margin: 0; background: #0f1c0f; color: #f5e6c8; font-family: 'Montserrat', sans-serif; overflow: hidden; -webkit-tap-highlight-color: transparent; }
-        .main-container { display: flex; flex-direction: column; height: 100vh; width: 100vw; }
-        
-        /* Screens */
-        .setup-screen, .score-screen { padding: 30px; display: flex; flex-direction: column; justify-content: center; height: 100vh; box-sizing: border-box; text-align: center; }
-        .setup-screen h1 { color: #7ab648; font-size: 32px; margin-bottom: 40px; text-transform: uppercase; }
-        .input-group { margin-bottom: 20px; text-align: left; }
-        .input-group label { display: block; font-size: 14px; margin-bottom: 8px; color: #7ab648; font-weight: 900; text-transform: uppercase;}
-        .input-group input { width: 100%; padding: 15px; font-size: 18px; border-radius: 8px; border: 2px solid #2a3b2a; background: #1a261a; color: #f5e6c8; font-family: 'Montserrat'; font-weight: 600; box-sizing: border-box; }
-        .input-group input:focus { outline: none; border-color: #7ab648; }
-        
-        /* Top Bar */
-        .top-bar { display: flex; justify-content: space-between; padding: 15px 20px; background: #1a261a; border-bottom: 2px solid #2a3b2a; align-items: center; }
-        .player-score { display: flex; flex-direction: column; }
-        .player-score.active { color: #7ab648; }
-        .p-name { font-size: 12px; font-weight: 900; text-transform: uppercase; }
-        .p-score { font-size: 24px; font-weight: 900; }
-        
-        /* Board */
-        .board-wrapper { display: flex; justify-content: center; background: #222; padding: 2px; }
-        .board { display: grid; grid-template-columns: repeat(15, 1fr); gap: 1px; width: 100vw; height: 100vw; box-sizing: border-box; }
-        .cell { background: #1a261a; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 900; position: relative; text-transform: uppercase; color: #000; }
-        .cell.tw { background: #ff4d4d; } .cell.tw::after { content: '3W'; font-size: 8px; color: white; }
-        .cell.dw { background: #ffb3b3; } .cell.dw::after { content: '2W'; font-size: 8px; color: black; }
-        .cell.tl { background: #3385ff; } .cell.tl::after { content: '3L'; font-size: 8px; color: white; }
-        .cell.dl { background: #b3d1ff; } .cell.dl::after { content: '2L'; font-size: 8px; color: black; }
-        .cell.center { background: #ffb3b3; } .cell.center::after { content: '★'; font-size: 12px; color: black; }
-        .cell.tile { background: #f5e6c8; color: #000; border-radius: 2px; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.2); z-index: 2; }
-        .cell.tile::after { content: ''; }
-        
-        /* Controls */
-        .controls { flex: 1; padding: 15px 20px; display: flex; flex-direction: column; justify-content: center; gap: 10px; }
-        .status-area { text-align: center; margin-bottom: 5px; }
-        .hooking-text { color: #7ab648; font-weight: 900; font-size: 16px; text-transform: uppercase; margin: 0; }
-        .error-text { color: #ff4d4d; font-weight: 900; font-size: 14px; margin-top: 5px; height: 18px; transition: opacity 0.3s; }
-        
-        .btn-row { display: flex; gap: 10px; }
-        .btn { flex: 1; padding: 15px; border-radius: 10px; border: none; font-family: 'Montserrat'; font-weight: 900; font-size: 14px; cursor: pointer; text-transform: uppercase; }
-        .btn-action { background: #7ab648; color: #fff; }
-        .btn-cancel { background: transparent; color: #c4a265; border: 2px solid #c4a265; }
-        .btn-end { background: #c4a265; color: #000; }
-        
-        .winner-text { font-size: 40px; color: #7ab648; margin-bottom: 10px; }
-        .final-score { font-size: 24px; margin-bottom: 30px; }
+        .splash-screen { position: fixed; inset: 0; background: #0f1c0f; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; box-sizing: border-box; }
+        .menu-btn { width: 100%; padding: 18px; margin: 10px 0; border-radius: 12px; border: none; font-family: 'Montserrat'; font-weight: 900; font-size: 14px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .btn-new { background: #f5e6c8; color: #000; }
+        .btn-cont { background: #7ab648; color: #fff; }
+        .btn-view-board { background: transparent; color: #c4a265; border: 2px solid #c4a265; }
+        .btn-cont:disabled { background: #222; color: #555; box-shadow: none; cursor: not-allowed; opacity: 0.5; }
+        .main-container { padding: 15px; box-sizing: border-box; width: 100vw; height: 100vh; display: flex; flex-direction: column; }
+        .score-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 12px 0; flex-shrink: 0; }
+        .score-card { padding: 10px; border-radius: 12px; border: 1px solid #333; background: rgba(255,255,255,0.03); text-align: center; transition: all 0.3s ease; }
+        .score-card.active { border-color: #7ab648; background: rgba(122,182,72,0.15); box-shadow: 0 0 10px rgba(122,182,72,0.2); }
+        .word-log { flex: 1; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 10px; margin-top: 15px; border: 1px solid #222; min-height: 80px; }
+        .log-entry { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-bottom: 1px solid #222; font-size: 13px; }
+        .log-entry:last-child { border: none; }
+        .scrabble-input { width: 100%; max-width: 320px; padding: 16px; background: #FFF; border: 4px solid #c4a265; color: #000; border-radius: 8px; text-align: center; font-size: 22px; font-weight: 900; display: block; margin: 0 auto; text-transform: uppercase; transition: border-color 0.3s ease; flex-shrink: 0; }
+        .board-modal { position: fixed; inset: 0; background: #0f1c0f; z-index: 8000; display: flex; flex-direction: column; }
+        .board-grid { display: grid; grid-template-columns: repeat(15, 34px); gap: 1px; background: #444; width: fit-content; padding: 20px; margin: 0 auto; }
+        .cell { background: #1a2e1a; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; font-size: 7px; font-weight: bold; position: relative; color: rgba(255,255,255,0.1); }
+        .cell.placed { background: #f5e6c8; color: #000; font-size: 16px; font-weight: 900; border-radius: 2px; }
+        .tw { background: #ff4d4d; color: #fff; } .dw { background: #ffb3b3; color: #333; } .tl { background: #3399ff; color: #fff; } .dl { background: #b3d9ff; color: #333; }
+        .pulse-hook { outline: 3px solid #7ab648; animation: pulse-glow 1s infinite; z-index: 5; box-shadow: 0 0 15px #7ab648; }
+        @keyframes pulse-glow { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        .active-cell { outline: 4px solid #fff; z-index: 10; box-shadow: 0 0 20px #fff; }
+        .controls-overlay { position: absolute; z-index: 100; display: grid; grid-template-areas: ". u ." "l . r" ". d ."; gap: 8px; background: rgba(0,0,0,0.95); padding: 12px; border-radius: 50%; border: 2px solid #c4a265; top: -55px; min-width: 100px; min-height: 100px; justify-items: center; align-items: center; }
+        .arrow-btn { width: 38px; height: 38px; background: #c4a265; color: #000; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: 900; font-size: 20px; }
+        .hint-text { text-align: center; font-size: 10px; color: #888; margin: 8px 0; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; flex-shrink: 0; }
+        .bonus-tag { font-size: 8px; position: absolute; bottom: 2px; font-weight: 900; }
+        .delete-btn { color: #ff4d4d; font-weight: 900; padding: 4px 8px; border: 1px solid #444; border-radius: 4px; font-size: 10px; }
+        .undo-chip { background: #444; color: #fff; border: none; padding: 5px 10px; border-radius: 6px; font-weight: 900; font-size: 10px; margin-left: 8px; opacity: 0.8; }
+        .error-msg { color: #ff4d4d; font-weight: 900; margin-left: 10px; font-size: 12px; }
     </style>
 </head>
 <body>
     <div id="root"></div>
     <script type="text/babel">
-        const { useState } = React;
+        const { useState, useEffect, useCallback, useMemo } = React;
 
-        const TW = new Set([0, 7, 14, 105, 119, 210, 217, 224]);
-        const DW = new Set([16, 28, 32, 42, 48, 56, 64, 70, 154, 160, 168, 176, 182, 192, 196, 208]);
-        const TL = new Set([20, 24, 76, 80, 84, 88, 136, 140, 144, 148, 200, 204]);
-        const DL = new Set([3, 11, 36, 38, 45, 52, 59, 92, 96, 98, 102, 108, 116, 122, 126, 128, 132, 165, 172, 179, 186, 188, 213, 221]);
-        const CENTER = 112;
+        const L_VALS = { A:1, B:3, C:3, D:2, E:1, F:4, G:2, H:4, I:1, J:8, K:5, L:1, M:3, N:1, O:1, P:3, Q:10, R:1, S:1, T:1, U:1, V:4, W:4, X:8, Y:4, Z:10 };
+        const TW = [0, 7, 14, 105, 119, 210, 217, 224], DW = [16, 28, 32, 42, 48, 56, 64, 70, 112, 154, 160, 168, 176, 182, 192, 196, 208], TL = [20, 24, 76, 80, 84, 88, 136, 140, 144, 148, 200, 204], DL = [3, 11, 36, 38, 45, 52, 59, 92, 96, 98, 102, 108, 116, 122, 126, 128, 132, 165, 172, 179, 186, 188, 213, 221];
+        const OFFICIAL_2_LETTER_WORDS = new Set(["AA","AB","AD","AE","AG","AH","AI","AL","AM","AN","AR","AS","AT","AW","AX","AY","BA","BE","BI","BO","BY","CH","DA","DE","DI","DO","EA","ED","EE","EF","EH","EL","EM","EN","ER","ES","ET","EW","EX","FA","FE","FY","GI","GO","GU","HA","HE","HI","HM","HO","ID","IF","IN","IO","IS","IT","JA","JO","KA","KI","KO","KY","LA","LI","LO","MA","ME","MI","MM","MO","MU","MY","NA","NE","NO","NU","NY","OB","OD","OE","OF","OH","OI","OK","OM","ON","OP","OR","OS","OU","OW","OX","OY","PA","PE","PI","PO","QI","RE","SH","SI","SO","TA","TE","TI","TO","UH","UM","UN","UP","US","UT","WE","WO","XI","XU","YA","YE","YO","ZA","ZE","ZO"]);
 
-        const ScrabbleApp = () => {
-            const [appState, setAppState] = useState('SETUP'); // SETUP, GAME, GAMEOVER
-            
-            // Player State
-            const [p1Name, setP1Name] = useState("PLAYER 1");
-            const [p2Name, setP2Name] = useState("PLAYER 2");
-            const [p1Score, setP1Score] = useState(0);
-            const [p2Score, setP2Score] = useState(0);
-            const [turn, setTurn] = useState(1); // 1 or 2
-
-            // Board State
+        function App() {
+            const [view, setView] = useState('splash');
+            const [playerNames, setPlayerNames] = useState([]);
+            const [scores, setScores] = useState([]);
             const [board, setBoard] = useState(Array(225).fill(null));
-            const [mode, setMode] = useState('IDLE');
-            const [hookWord, setHookWord] = useState("");
-            const [error, setError] = useState("");
+            const [activePlayer, setActivePlayer] = useState(0);
+            const [history, setHistory] = useState([]);
+            
+            const [word, setWord] = useState("");
+            const [isWordValid, setIsWordValid] = useState(null);
+            const [cursor, setCursor] = useState(null);
+            const [pendingWord, setPendingWord] = useState(null);
+            const [validDirs, setValidDirs] = useState([]);
+            const [isScanning, setIsScanning] = useState(false);
+            const [isDelaying, setIsDelaying] = useState(false);
+            const [canBePlacedGlobally, setCanBePlacedGlobally] = useState(false);
+            const [conflictError, setConflictError] = useState("");
 
-            const startGame = () => {
-                if (!p1Name) setP1Name("PLAYER 1");
-                if (!p2Name) setP2Name("PLAYER 2");
-                setAppState('GAME');
-                setBoard(Array(225).fill(null));
-                setP1Score(0);
-                setP2Score(0);
-                setTurn(1);
+            const isBoardEmpty = useMemo(() => board.every(c => c === null), [board]);
+            const legalHooks = useMemo(() => {
+                if (isBoardEmpty) return [112];
+                if (!pendingWord) return [];
+                return board.map((tile, i) => (tile !== null && pendingWord.includes(tile)) ? i : null).filter(i => i !== null);
+            }, [board, isBoardEmpty, pendingWord]);
+
+            useEffect(() => {
+                if (['scores', 'board'].includes(view)) {
+                    localStorage.setItem("scr_v28_scores", JSON.stringify(scores));
+                    localStorage.setItem("scr_v28_board", JSON.stringify(board));
+                    localStorage.setItem("scr_v28_names", JSON.stringify(playerNames));
+                    localStorage.setItem("scr_v28_active", activePlayer.toString());
+                }
+            }, [scores, board, view, activePlayer]);
+
+            const pushHistory = () => {
+                setHistory(prev => [{
+                    board: [...board],
+                    scores: JSON.parse(JSON.stringify(scores)),
+                    activePlayer
+                }, ...prev].slice(0, 10));
             };
 
-            const getCellClass = (i, tile) => {
-                if (tile) return 'cell tile';
-                if (i === CENTER) return 'cell center';
-                if (TW.has(i)) return 'cell tw';
-                if (DW.has(i)) return 'cell dw';
-                if (TL.has(i)) return 'cell tl';
-                if (DL.has(i)) return 'cell dl';
-                return 'cell';
+            const undoLastAction = () => {
+                if (history.length === 0) return;
+                const last = history[0];
+                setBoard(last.board);
+                setScores(last.scores);
+                setActivePlayer(last.activePlayer);
+                setHistory(prev => prev.slice(1));
             };
 
-            const handleCellClick = (index) => {
-                if (mode === 'IDLE') {
-                    const word = prompt("Enter word to place:");
-                    if (word) {
-                        setHookWord(word.toUpperCase());
-                        setMode('HOOKING');
-                        setError("");
-                    }
+            const removeSpecificWord = (playerIdx, entryId) => {
+                const nextScores = [...scores];
+                nextScores[playerIdx] = nextScores[playerIdx].filter(e => e.id !== entryId);
+                setScores(nextScores);
+            };
+
+            const checkDict = async (w) => {
+                w = w.toUpperCase();
+                if (w.length <= 1) return true;
+                if (w.length === 2) return OFFICIAL_2_LETTER_WORDS.has(w);
+                try {
+                    const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${w.toLowerCase()}`);
+                    return res.ok;
+                } catch { return false; }
+            };
+
+            const getFullWordAt = (b, idx, orientation) => {
+                let currentWord = b[idx];
+                const diff = orientation === 'v' ? 15 : 1;
+                let p = idx - diff;
+                while (p >= 0 && b[p] !== null && (orientation === 'v' || Math.floor(p/15) === Math.floor(idx/15))) {
+                    currentWord = b[p] + currentWord; p -= diff;
+                }
+                p = idx + diff;
+                while (p < 225 && b[p] !== null && (orientation === 'v' || Math.floor(p/15) === Math.floor(idx/15))) {
+                    currentWord = currentWord + b[p]; p += diff;
+                }
+                return currentWord;
+            };
+
+            const getPlacementDetails = (hookIdx, dir, wordStr, currentBoard) => {
+                let actualStart, step, orientation;
+                const isEmpty = currentBoard.every(c => c === null);
+                if (isEmpty) {
+                    if (dir === 'right') { actualStart = hookIdx; step = 1; orientation = 'h'; }
+                    else if (dir === 'left') { actualStart = hookIdx - wordStr.length + 1; step = 1; orientation = 'h'; }
+                    else if (dir === 'down') { actualStart = hookIdx; step = 15; orientation = 'v'; }
+                    else if (dir === 'up') { actualStart = hookIdx - (wordStr.length - 1) * 15; step = 15; orientation = 'v'; }
                 } else {
-                    placeWord(index);
+                    const hookLetter = currentBoard[hookIdx];
+                    const letterIndexInWord = wordStr.indexOf(hookLetter);
+                    if (dir === 'right') { actualStart = hookIdx - letterIndexInWord; step = 1; orientation = 'h'; }
+                    else if (dir === 'down') { actualStart = hookIdx - (letterIndexInWord * 15); step = 15; orientation = 'v'; }
+                    else return null; 
                 }
+                return { actualStart, step, orientation };
             };
 
-            const placeWord = (startIndex) => {
-                const direction = confirm("OK for Horizontal, Cancel for Vertical");
-                const newBoard = [...board];
-                let conflictFound = false;
+            const validateMove = async (hookIdx, dir, wordStr, currentBoard, skipDict = false) => {
+                const details = getPlacementDetails(hookIdx, dir, wordStr, currentBoard);
+                if (!details) return false;
+                const { actualStart, step, orientation } = details;
+                let curr = actualStart;
+                let newPlacements = [];
+                let tempBoard = [...currentBoard];
+                for(let i=0; i<wordStr.length; i++) {
+                    if (curr < 0 || curr >= 225) return false;
+                    if (orientation === 'h' && Math.floor(curr/15) !== Math.floor(actualStart/15)) return false; 
+                    if (currentBoard[curr] !== null && currentBoard[curr] !== wordStr[i]) return false; 
+                    if (!tempBoard[curr]) { tempBoard[curr] = wordStr[i]; newPlacements.push(curr); }
+                    curr += step;
+                }
+                if (currentBoard.every(c => c === null)) return skipDict ? true : await checkDict(wordStr);
+                const crossOrientation = orientation === 'v' ? 'h' : 'v';
+                const wordsToCheck = new Set();
+                wordsToCheck.add(getFullWordAt(tempBoard, hookIdx, orientation));
+                newPlacements.forEach(idx => {
+                    const cross = getFullWordAt(tempBoard, idx, crossOrientation);
+                    if (cross.length > 1) wordsToCheck.add(cross);
+                });
+                if (skipDict) return true; 
+                for (let w of wordsToCheck) { if (!(await checkDict(w))) return false; }
+                return true;
+            };
 
-                for (let i = 0; i < hookWord.length; i++) {
-                    const currentIndex = direction ? startIndex + i : startIndex + (i * 15);
-                    
-                    if (currentIndex >= 225 || (direction && Math.floor(currentIndex/15) !== Math.floor(startIndex/15))) {
-                        showError("WORD GOES OFF BOARD");
-                        return;
+            useEffect(() => {
+                if (!word || word.length < 2) { setIsWordValid(null); setCanBePlacedGlobally(false); return; }
+                const checkAndScan = async () => {
+                    const valid = await checkDict(word);
+                    setIsWordValid(valid);
+                    if (!valid) { setCanBePlacedGlobally(false); return; }
+                    if (isBoardEmpty) { setCanBePlacedGlobally(true); return; }
+                    const possibleHooks = board.map((tile, i) => (tile !== null && word.includes(tile)) ? i : null).filter(i => i !== null);
+                    let foundPossible = false;
+                    for (let hook of possibleHooks) {
+                        if (await validateMove(hook, 'right', word, board, true) || await validateMove(hook, 'down', word, board, true)) {
+                            foundPossible = true; break;
+                        }
                     }
+                    setCanBePlacedGlobally(foundPossible);
+                };
+                const timeout = setTimeout(checkAndScan, 400);
+                return () => clearTimeout(timeout);
+            }, [word, board, isBoardEmpty]);
 
-                    if (newBoard[currentIndex] && newBoard[currentIndex] !== hookWord[i]) {
-                        conflictFound = true;
-                        break;
+            const executePlacement = (hookIdx, dir) => {
+                const details = getPlacementDetails(hookIdx, dir, pendingWord, board);
+                if (!details) return;
+                
+                pushHistory(); 
+                const nb = [...board];
+                let curr = details.actualStart;
+                let calculatedPoints = 0;
+                let wordMult = 1;
+                let bingoPoints = (pendingWord.length >= 7) ? 50 : 0;
+
+                for(let i=0; i<pendingWord.length; i++) {
+                    const letter = pendingWord[i];
+                    const lVal = L_VALS[letter] || 0;
+                    if (!nb[curr]) {
+                        let letterMult = 1;
+                        if (DL.includes(curr)) letterMult = 2;
+                        if (TL.includes(curr)) letterMult = 3;
+                        if (DW.includes(curr)) wordMult *= 2;
+                        if (TW.includes(curr)) wordMult *= 3;
+                        calculatedPoints += (lVal * letterMult);
+                        nb[curr] = letter;
+                    } else {
+                        calculatedPoints += lVal;
                     }
-                    newBoard[currentIndex] = hookWord[i];
+                    curr += details.step;
                 }
 
-                if (conflictFound) {
-                    showError("CONFLICT DETECTED. TRY AGAIN.");
-                } else {
-                    setBoard(newBoard);
-                    setMode('IDLE');
-                    setHookWord("");
-                }
+                const finalScore = (calculatedPoints * wordMult) + bingoPoints;
+                const nextScores = [...scores];
+                nextScores[activePlayer] = [{id: Date.now(), w: pendingWord, s: finalScore}, ...nextScores[activePlayer]];
+                
+                setScores(nextScores);
+                setBoard(nb); 
+                setIsDelaying(true);
+                setCursor(null);
+                setValidDirs([]);
+                
+                setTimeout(() => {
+                    setPendingWord(null); 
+                    setWord(""); 
+                    setIsWordValid(null);
+                    setIsDelaying(false);
+                    setActivePlayer((prev) => (prev + 1) % playerNames.length);
+                    setView('scores');
+                }, 1500);
             };
 
-            const showError = (msg) => {
-                setError(msg);
-                setTimeout(() => setError(""), 3000);
-            };
+            if (view === 'splash') return (
+                <div className="splash-screen">
+                    <h1 style={{fontFamily:'Playfair Display', fontSize:'48px', marginBottom:'40px'}}>SCRABBLE</h1>
+                    <button className="menu-btn btn-new" onClick={() => setView('setup-count')}>NEW GAME</button>
+                    <button className="menu-btn btn-cont" onClick={() => {
+                        setScores(JSON.parse(localStorage.getItem("scr_v28_scores")));
+                        setBoard(JSON.parse(localStorage.getItem("scr_v28_board")));
+                        setPlayerNames(JSON.parse(localStorage.getItem("scr_v28_names")));
+                        setActivePlayer(parseInt(localStorage.getItem("scr_v28_active")) || 0);
+                        setView('scores');
+                    }} disabled={!localStorage.getItem("scr_v28_scores")}>CONTINUE</button>
+                </div>
+            );
 
-            const endTurn = () => {
-                const pts = prompt(`Enter points scored by ${turn === 1 ? p1Name : p2Name} this turn:`);
-                if (pts !== null && pts !== "") {
-                    const numPts = parseInt(pts) || 0;
-                    if (turn === 1) setP1Score(p1Score + numPts);
-                    else setP2Score(p2Score + numPts);
-                    setTurn(turn === 1 ? 2 : 1);
-                }
-            };
-
-            const endGame = () => {
-                if(confirm("Are you sure you want to end the game?")) {
-                    setAppState('GAMEOVER');
-                }
-            };
-
-            // ---- SCREENS ----
-
-            if (appState === 'SETUP') {
-                return (
-                    <div className="setup-screen">
-                        <h1>Scrabble Referee</h1>
-                        <div className="input-group">
-                            <label>Player 1 Name</label>
-                            <input type="text" value={p1Name} onChange={(e) => setP1Name(e.target.value)} placeholder="Player 1" />
-                        </div>
-                        <div className="input-group">
-                            <label>Player 2 Name</label>
-                            <input type="text" value={p2Name} onChange={(e) => setP2Name(e.target.value)} placeholder="Player 2" />
-                        </div>
-                        <button className="btn btn-action" style={{marginTop: '20px'}} onClick={startGame}>START GAME</button>
-                    </div>
-                );
-            }
-
-            if (appState === 'GAMEOVER') {
-                const p1Wins = p1Score > p2Score;
-                const tie = p1Score === p2Score;
-                return (
-                    <div className="score-screen">
-                        <h1>Game Over</h1>
-                        <h2 className="winner-text">
-                            {tie ? "IT'S A TIE!" : `${p1Wins ? p1Name : p2Name} WINS!`}
-                        </h2>
-                        <div className="final-score">
-                            {p1Name}: {p1Score}<br/>
-                            {p2Name}: {p2Score}
-                        </div>
-                        <button className="btn btn-action" onClick={() => setAppState('SETUP')}>NEW GAME</button>
-                    </div>
-                );
-            }
-
-            return (
-                <div className="main-container">
-                    <div className="top-bar">
-                        <div className={`player-score ${turn === 1 ? 'active' : ''}`}>
-                            <span className="p-name">{p1Name}</span>
-                            <span className="p-score">{p1Score}</span>
-                        </div>
-                        <div className={`player-score ${turn === 2 ? 'active' : ''}`} style={{textAlign: 'right'}}>
-                            <span className="p-name">{p2Name}</span>
-                            <span className="p-score">{p2Score}</span>
-                        </div>
-                    </div>
-
-                    <div className="board-wrapper">
-                        <div className="board">
-                            {board.map((tile, i) => (
-                                <div key={i} className={getCellClass(i, tile)} onClick={() => handleCellClick(i)}>
-                                    {tile}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                    
-                    <div className="controls">
-                        <div className="status-area">
-                            <p className="hooking-text">
-                                {mode === 'HOOKING' ? `HOOKING "${hookWord}"` : `${turn === 1 ? p1Name : p2Name}'S TURN`}
-                            </p>
-                            <div className="error-text" style={{ opacity: error ? 1 : 0 }}>
-                                {error}
-                            </div>
-                        </div>
-
-                        {mode === 'HOOKING' ? (
-                            <button className="btn btn-cancel" onClick={() => { setMode('IDLE'); setError(""); }}>
-                                CANCEL HOOK
-                            </button>
-                        ) : (
-                            <div className="btn-row">
-                                <button className="btn btn-action" onClick={endTurn}>END TURN</button>
-                                <button className="btn btn-end" onClick={endGame}>END GAME</button>
-                            </div>
-                        )}
+            if (view === 'setup-count') return (
+                <div className="splash-screen">
+                    <h2 style={{marginBottom:'20px'}}>PLAYERS</h2>
+                    <div style={{display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'10px', width:'100%', maxWidth:'300px'}}>
+                        {[1,2,3,4].map(n => (
+                            <div key={n} style={{aspectRatio:'1', border:'2px solid #c4a265', borderRadius:'8px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'24px', fontWeight:'900', background:'rgba(255,255,255,0.05)'}} 
+                                 onClick={() => { setPlayerNames(new Array(n).fill("").map((_, i) => `PLAYER ${i+1}`)); setView('setup-names'); }}>{n}</div>
+                        ))}
                     </div>
                 </div>
             );
-        };
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<ScrabbleApp />);
+            if (view === 'setup-names') return (
+                <div className="splash-screen">
+                    <h2 style={{marginBottom:'20px'}}>NAMES</h2>
+                    {playerNames.map((n, i) => (
+                        <input key={i} className="scrabble-input" style={{margin:'5px 0', fontSize:'16px'}} value={n} 
+                               onFocus={(e) => { if(e.target.value.includes("PLAYER")) { const next = [...playerNames]; next[i] = ""; setPlayerNames(next); } }}
+                               onChange={e => { const next = [...playerNames]; next[i] = e.target.value.toUpperCase(); setPlayerNames(next); }} />
+                    ))}
+                    <button className="menu-btn btn-cont" style={{marginTop:'20px'}} onClick={() => { setScores(new Array(playerNames.length).fill([])); setBoard(Array(225).fill(null)); setActivePlayer(0); setView('scores'); }}>START GAME</button>
+                </div>
+            );
+
+            return (
+                <div className="main-container">
+                    {view === 'scores' ? (
+                        <>
+                            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', flexShrink:0}}>
+                                <h1 style={{margin:0, fontSize:'22px', fontFamily:'Playfair Display'}}>SCRABBLE</h1>
+                                <div style={{display:'flex', alignItems:'center'}}>
+                                    {history.length > 0 && <button className="undo-chip" onClick={undoLastAction}>UNDO</button>}
+                                    <button onClick={() => setView('splash')} style={{background:'none', border:'1px solid #444', color:'#444', padding:'5px 12px', borderRadius:'6px', fontWeight:900, fontSize:'10px', marginLeft:'8px'}}>MENU</button>
+                                </div>
+                            </div>
+                            <div className="score-grid">
+                                {playerNames.map((name, i) => (
+                                    <div key={i} onClick={() => setActivePlayer(i)} className={`score-card ${activePlayer === i ? 'active' : ''}`}>
+                                        <div style={{fontSize:"10px", color:'#c4a265', fontWeight:900}}>{name}</div>
+                                        <div style={{fontSize:"32px", fontWeight:"900"}}>{scores[i]?.reduce((a,b)=>a+b.s,0) || 0}</div>
+                                    </div>
+                                ))}
+                            </div>
+                            
+                            <input 
+                                className="scrabble-input" 
+                                value={word} 
+                                onChange={e => { setWord(e.target.value.toUpperCase()); setIsWordValid(null); setCanBePlacedGlobally(false); }} 
+                                placeholder="TYPE WORD" 
+                                style={{ borderColor: isWordValid === true ? '#7ab648' : isWordValid === false ? '#ff4d4d' : '#c4a265' }}
+                            />
+                            
+                            {word && !canBePlacedGlobally && isWordValid && <div className="hint-text" style={{color:'#ff4d4d'}}>NO VALID PLACEMENTS ON BOARD</div>}
+                            {word && canBePlacedGlobally && <div className="hint-text" style={{color:'#7ab648'}}>READY FOR PLACEMENT</div>}
+
+                            <div style={{display:'flex', gap:'8px', marginTop:'10px', flexShrink:0}}>
+                                <button className="menu-btn btn-view-board" style={{flex:1, marginTop:0}} onClick={() => { setPendingWord(null); setView('board'); }}>VIEW GAME BOARD</button>
+                                <button className="menu-btn btn-cont" style={{flex:1, marginTop:0}} onClick={() => { setPendingWord(word); setView('board'); }} disabled={!canBePlacedGlobally}>ADD & PLACE →</button>
+                            </div>
+
+                            <div className="word-log">
+                                <div style={{fontSize:'9px', fontWeight:900, color:'#555', marginBottom:'8px', textAlign:'center'}}>HISTORY: {playerNames[activePlayer]}</div>
+                                {scores[activePlayer]?.length > 0 ? scores[activePlayer].map((entry, idx) => (
+                                    <div key={entry.id} className="log-entry">
+                                        <div style={{display:'flex', alignItems:'center', gap:'10px'}}>
+                                            <span style={{fontWeight:900}}>{entry.w}</span>
+                                            <span style={{color:'#7ab648', fontSize:'11px'}}>+{entry.s}</span>
+                                        </div>
+                                        <button className="delete-btn" onClick={() => removeSpecificWord(activePlayer, entry.id)}>REMOVE</button>
+                                    </div>
+                                )) : <div style={{textAlign:'center', fontSize:'10px', color:'#444', marginTop:'15px'}}>NO WORDS PLAYED YET</div>}
+                            </div>
+                        </>
+                    ) : (
+                        <div className="board-modal">
+                            <div style={{flex:1, overflow:'auto', background:'#111', display:'flex', alignItems:'center'}}>
+                                <div className="board-grid">
+                                    {board.map((tile, i) => {
+                                        const isHook = pendingWord && legalHooks.includes(i);
+                                        const showArrows = cursor === i && pendingWord;
+                                        const b = TW.includes(i) ? "tw" : DW.includes(i) ? "dw" : TL.includes(i) ? "tl" : DL.includes(i) ? "dl" : "";
+                                        const bText = TW.includes(i) ? "3W" : DW.includes(i) ? "2W" : TL.includes(i) ? "3L" : DL.includes(i) ? "2L" : "";
+                                        return (
+                                            <div key={i} onClick={async () => { 
+                                                if(isDelaying || !pendingWord) return; 
+                                                if(!legalHooks.includes(i)) {
+                                                    setConflictError("CONFLICT");
+                                                    setTimeout(() => setConflictError(""), 2000);
+                                                    return;
+                                                } 
+                                                setCursor(i); 
+                                                setIsScanning(true); 
+                                                setValidDirs([]); 
+                                                const dirs = isBoardEmpty ? ['up','down','left','right'] : ['right','down']; 
+                                                const found = []; 
+                                                for(let d of dirs){if(await validateMove(i,d,pendingWord,board)) found.push(d);} 
+                                                setValidDirs(found); 
+                                                setIsScanning(false);
+                                                if(found.length === 0) {
+                                                    setConflictError("CONFLICT");
+                                                    setTimeout(() => setConflictError(""), 2000);
+                                                }
+                                            }} className={`cell ${b} ${tile?'placed':''} ${cursor===i?'active-cell':''} ${isHook?'pulse-hook':''}`}>
+                                                {tile || (i === 112 ? '★' : '')}
+                                                {!tile && bText && <span className="bonus-tag">{bText}</span>}
+                                                {showArrows && !isDelaying && validDirs.length > 0 && (
+                                                    <div className="controls-overlay" onClick={e => e.stopPropagation()}>
+                                                        {isScanning && <div className="scanning-text" style={{fontSize:'8px', color:'#7ab648', position:'absolute', top:'-15px'}}>SCANNING...</div>}
+                                                        {validDirs.map(d => (<div key={d} className="arrow-btn" style={{gridArea: d[0]}} onClick={() => executePlacement(i, d)}>{d==='up'?'↑':d==='down'?'↓':d==='left'?'←':'→'}</div>))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                            <div style={{padding:'15px', background:'#111', borderTop:'1px solid #333', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                                <div style={{display:'flex', alignItems:'center'}}>
+                                    <span style={{fontWeight:900, color:pendingWord?'#7ab648':'#888'}}>{isDelaying ? "UPDATING..." : (pendingWord ? `HOOKING "${pendingWord}"` : "BOARD VIEW (READ ONLY)")}</span>
+                                    {conflictError && <span className="error-msg">{conflictError}</span>}
+                                </div>
+                                <button onClick={()=>setView('scores')} style={{padding:'8px 20px', background:'#7ab648', border:'none', color:'#fff', fontWeight:'900', borderRadius:'5px'}}>BACK TO GAME</button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
 </body>
 </html>
