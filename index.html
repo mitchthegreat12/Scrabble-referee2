@@ -44,7 +44,6 @@
         .bonus-tag { font-size: 8px; position: absolute; bottom: 2px; font-weight: 900; }
         .delete-btn { color: #ff4d4d; font-weight: 900; padding: 4px 8px; border: 1px solid #444; border-radius: 4px; font-size: 10px; }
         .undo-chip { background: #444; color: #fff; border: none; padding: 5px 10px; border-radius: 6px; font-weight: 900; font-size: 10px; margin-left: 8px; opacity: 0.8; }
-        .error-msg { color: #ff4d4d; font-weight: 900; margin-left: 10px; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -72,7 +71,6 @@
             const [isScanning, setIsScanning] = useState(false);
             const [isDelaying, setIsDelaying] = useState(false);
             const [canBePlacedGlobally, setCanBePlacedGlobally] = useState(false);
-            const [conflictError, setConflictError] = useState("");
 
             const isBoardEmpty = useMemo(() => board.every(c => c === null), [board]);
             const legalHooks = useMemo(() => {
@@ -347,32 +345,14 @@
                                         const b = TW.includes(i) ? "tw" : DW.includes(i) ? "dw" : TL.includes(i) ? "tl" : DL.includes(i) ? "dl" : "";
                                         const bText = TW.includes(i) ? "3W" : DW.includes(i) ? "2W" : TL.includes(i) ? "3L" : DL.includes(i) ? "2L" : "";
                                         return (
-                                            <div key={i} onClick={async () => { 
-                                                if(isDelaying || !pendingWord) return; 
-                                                if(!legalHooks.includes(i)) {
-                                                    setConflictError("CONFLICT");
-                                                    setTimeout(() => setConflictError(""), 2000);
-                                                    return;
-                                                } 
-                                                setCursor(i); 
-                                                setIsScanning(true); 
-                                                setValidDirs([]); 
-                                                const dirs = isBoardEmpty ? ['up','down','left','right'] : ['right','down']; 
-                                                const found = []; 
-                                                for(let d of dirs){if(await validateMove(i,d,pendingWord,board)) found.push(d);} 
-                                                setValidDirs(found); 
-                                                setIsScanning(false);
-                                                if(found.length === 0) {
-                                                    setConflictError("CONFLICT");
-                                                    setTimeout(() => setConflictError(""), 2000);
-                                                }
-                                            }} className={`cell ${b} ${tile?'placed':''} ${cursor===i?'active-cell':''} ${isHook?'pulse-hook':''}`}>
+                                            <div key={i} onClick={async () => { if(isDelaying || !pendingWord) return; if(!legalHooks.includes(i)) return; setCursor(i); setIsScanning(true); setValidDirs([]); const dirs = isBoardEmpty ? ['up','down','left','right'] : ['right','down']; const found = []; for(let d of dirs){if(await validateMove(i,d,pendingWord,board)) found.push(d);} setValidDirs(found); setIsScanning(false); }} className={`cell ${b} ${tile?'placed':''} ${cursor===i?'active-cell':''} ${isHook?'pulse-hook':''}`}>
                                                 {tile || (i === 112 ? '★' : '')}
                                                 {!tile && bText && <span className="bonus-tag">{bText}</span>}
-                                                {showArrows && !isDelaying && validDirs.length > 0 && (
+                                                {showArrows && !isDelaying && (
                                                     <div className="controls-overlay" onClick={e => e.stopPropagation()}>
                                                         {isScanning && <div className="scanning-text" style={{fontSize:'8px', color:'#7ab648', position:'absolute', top:'-15px'}}>SCANNING...</div>}
                                                         {validDirs.map(d => (<div key={d} className="arrow-btn" style={{gridArea: d[0]}} onClick={() => executePlacement(i, d)}>{d==='up'?'↑':d==='down'?'↓':d==='left'?'←':'→'}</div>))}
+                                                        {!isScanning && validDirs.length === 0 && <div style={{fontSize:'8px', color:'red', fontWeight:900, textAlign:'center'}}>CONFLICT</div>}
                                                     </div>
                                                 )}
                                             </div>
@@ -381,10 +361,7 @@
                                 </div>
                             </div>
                             <div style={{padding:'15px', background:'#111', borderTop:'1px solid #333', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-                                <div style={{display:'flex', alignItems:'center'}}>
-                                    <span style={{fontWeight:900, color:pendingWord?'#7ab648':'#888'}}>{isDelaying ? "UPDATING..." : (pendingWord ? `HOOKING "${pendingWord}"` : "BOARD VIEW (READ ONLY)")}</span>
-                                    {conflictError && <span className="error-msg">{conflictError}</span>}
-                                </div>
+                                <span style={{fontWeight:900, color:pendingWord?'#7ab648':'#888'}}>{isDelaying ? "UPDATING..." : (pendingWord ? `HOOKING "${pendingWord}"` : "BOARD VIEW (READ ONLY)")}</span>
                                 <button onClick={()=>setView('scores')} style={{padding:'8px 20px', background:'#7ab648', border:'none', color:'#fff', fontWeight:'900', borderRadius:'5px'}}>BACK TO GAME</button>
                             </div>
                         </div>
