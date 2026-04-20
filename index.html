@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pro Scrabble Referee v31</title>
+    <title>Pro Scrabble Referee v32</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;900&family=Playfair+Display:wght@900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -20,7 +20,7 @@
         .btn-dict { background: #222; color: #c4a265; border: 1px solid #333; margin-top: 5px; font-size: 11px; padding: 12px; }
         .main-container { padding: 15px; box-sizing: border-box; width: 100vw; height: 100vh; display: flex; flex-direction: column; }
         .score-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 12px 0; flex-shrink: 0; }
-        .score-card { padding: 10px; border-radius: 12px; border: 1px solid #333; background: rgba(255,255,255,0.03); text-align: center; }
+        .score-card { padding: 10px; border-radius: 12px; border: 1px solid #333; background: rgba(255,255,255,0.03); text-align: center; transition: 0.3s; }
         .score-card.active { border-color: #7ab648; background: rgba(122,182,72,0.15); box-shadow: 0 0 10px rgba(122,182,72,0.2); }
         .word-log { flex: 1; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 10px; margin-top: 15px; border: 1px solid #222; }
         .log-entry { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-bottom: 1px solid #222; font-size: 13px; }
@@ -37,13 +37,21 @@
         .controls-overlay { position: absolute; z-index: 100; display: grid; grid-template-areas: ". u ." "l . r" ". d ."; gap: 8px; background: rgba(0,0,0,0.95); padding: 12px; border-radius: 50%; border: 2px solid #c4a265; top: -55px; min-width: 100px; min-height: 100px; justify-items: center; align-items: center; }
         .arrow-btn { width: 38px; height: 38px; background: #c4a265; color: #000; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: 900; font-size: 20px; }
 
-        .wheel-container { height: 100px; overflow-y: scroll; scroll-snap-type: y mandatory; background: #1a2e1a; margin-bottom: 10px; border: 1px solid #333; border-radius: 8px; position: relative; }
-        .wheel-item { height: 50px; line-height: 50px; text-align: center; font-size: 20px; font-weight: 900; scroll-snap-align: center; color: #444; }
-        .wheel-item.selected { color: #f5e6c8; font-size: 32px; }
-        .wheel-marker { position: absolute; top: 25px; left: 0; right: 0; height: 50px; border-top: 1px solid #7ab648; border-bottom: 1px solid #7ab648; pointer-events: none; background: rgba(122,182,72,0.1); }
-        .quick-ref-box { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 5px; max-height: 80px; overflow-y: auto; }
+        /* Dictionary Styling */
+        .wheel-container { height: 80px; overflow-y: scroll; scroll-snap-type: y mandatory; background: #1a2e1a; margin-bottom: 10px; border: 1px solid #333; border-radius: 8px; position: relative; }
+        .wheel-item { height: 40px; line-height: 40px; text-align: center; font-size: 18px; font-weight: 900; scroll-snap-align: center; color: #444; }
+        .wheel-item.selected { color: #f5e6c8; font-size: 28px; }
+        .wheel-marker { position: absolute; top: 20px; left: 0; right: 0; height: 40px; border-top: 1px solid #7ab648; border-bottom: 1px solid #7ab648; pointer-events: none; background: rgba(122,182,72,0.1); }
+        .quick-ref-box { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 5px; max-height: 60px; overflow-y: auto; }
         .ref-tag { background: #222; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; color: #7ab648; border: 1px solid #333; }
-        .definition-box { flex: 1; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 12px; overflow-y: auto; }
+        
+        .definition-box { flex: 1; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid #222; overflow-y: auto; }
+        .def-word { font-family: 'Playfair Display'; font-size: 24px; color: #7ab648; text-transform: uppercase; margin: 0; }
+        .def-type { font-style: italic; color: #c4a265; font-size: 11px; display: block; margin-bottom: 10px; }
+        .def-text { line-height: 1.5; font-size: 14px; color: #ddd; }
+        .legal-badge { background: #7ab648; color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; height: fit-content; }
+        .invalid-badge { background: #ff4d4d; color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; }
+        
         .undo-chip { background: #444; color: #fff; border: none; padding: 5px 10px; border-radius: 6px; font-weight: 900; font-size: 10px; margin-left: 8px; }
     </style>
 </head>
@@ -68,7 +76,6 @@
             const [pendingWord, setPendingWord] = useState(null);
             const [cursor, setCursor] = useState(null);
             const [validDirs, setValidDirs] = useState([]);
-            const [isScanning, setIsScanning] = useState(false);
 
             // Dictionary States
             const [dictSearch, setDictSearch] = useState("");
@@ -89,14 +96,20 @@
             }, [dictSearch]);
 
             const fetchDefinition = async (w) => {
-                setDictDef({loading: true});
+                if (!w) return;
+                setDictDef({loading: true, searchWord: w});
                 try {
                     const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${w.toLowerCase()}`);
                     const data = await res.json();
                     if (res.ok) {
-                        setDictDef({ word: data[0].word, type: data[0].meanings[0].partOfSpeech, definition: data[0].meanings[0].definitions[0].definition });
-                    } else { setDictDef({error: "Not found."}); }
-                } catch { setDictDef({error: "Error."}); }
+                        setDictDef({ 
+                            word: data[0].word, 
+                            type: data[0].meanings[0].partOfSpeech, 
+                            definition: data[0].meanings[0].definitions[0].definition,
+                            isLegal: true 
+                        });
+                    } else { setDictDef({error: true, searchWord: w, isLegal: false}); }
+                } catch { setDictDef({error: true, searchWord: w, isLegal: false}); }
             };
 
             const pushHistory = () => {
@@ -178,7 +191,7 @@
                 <div className="splash-screen">
                     <h2>PLAYERS</h2>
                     <div style={{display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'10px'}}>
-                        {[1,2,3,4].map(n => <div key={n} style={{padding:'20px', border:'2px solid #c4a265', borderRadius:'8px'}} onClick={() => { setPlayerNames(new Array(n).fill("").map((_, i) => `PLAYER ${i+1}`)); setView('setup-names'); }}>{n}</div>)}
+                        {[1,2,3,4].map(n => <div key={n} style={{padding:'20px', border:'2px solid #c4a265', borderRadius:'8px', fontWeight:900}} onClick={() => { setPlayerNames(new Array(n).fill("").map((_, i) => `PLAYER ${i+1}`)); setView('setup-names'); }}>{n}</div>)}
                     </div>
                 </div>
             );
@@ -186,26 +199,53 @@
             if (view === 'setup-names') return (
                 <div className="splash-screen">
                     <h2>NAMES</h2>
-                    {playerNames.map((n, i) => <input key={i} className="scrabble-input" style={{margin:'5px 0', fontSize:'16px'}} value={n} onChange={e => { const next = [...playerNames]; next[i] = e.target.value.toUpperCase(); setPlayerNames(next); }} />)}
-                    <button className="menu-btn btn-cont" onClick={() => { setScores(new Array(playerNames.length).fill([])); setView('scores'); }}>START</button>
+                    {playerNames.map((n, i) => (
+                        <input 
+                            key={i} 
+                            className="scrabble-input" 
+                            style={{margin:'5px 0', fontSize:'16px'}} 
+                            value={n} 
+                            onFocus={(e) => { if(e.target.value.includes("PLAYER")) { const next = [...playerNames]; next[i] = ""; setPlayerNames(next); } }}
+                            onChange={e => { const next = [...playerNames]; next[i] = e.target.value.toUpperCase(); setPlayerNames(next); }} 
+                        />
+                    ))}
+                    <button className="menu-btn btn-cont" style={{marginTop:'20px'}} onClick={() => { setScores(new Array(playerNames.length).fill([])); setView('scores'); }}>START GAME</button>
                 </div>
             );
 
             if (view === 'dictionary') return (
                 <div className="dict-modal">
                     <div className="main-container">
-                        <input className="scrabble-input" placeholder="SEARCH..." value={dictSearch} onChange={(e) => setDictSearch(e.target.value.toUpperCase())} />
-                        <div className="wheel-container" onScroll={(e) => setSelectedLetter("ABCDEFGHIJKLMNOPQRSTUVWXYZ"[Math.round(e.target.scrollTop/50)])}>
+                        <input className="scrabble-input" placeholder="SEARCH WORD..." value={dictSearch} onChange={(e) => setDictSearch(e.target.value.toUpperCase())} />
+                        <div className="wheel-container" onScroll={(e) => setSelectedLetter("ABCDEFGHIJKLMNOPQRSTUVWXYZ"[Math.round(e.target.scrollTop/40)])}>
                             <div className="wheel-marker"></div>
-                            <div style={{height:'25px'}}></div>
+                            <div style={{height:'20px'}}></div>
                             {"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(l => <div key={l} className={`wheel-item ${selectedLetter===l?'selected':''}`}>{l}</div>)}
-                            <div style={{height:'25px'}}></div>
+                            <div style={{height:'20px'}}></div>
                         </div>
                         <div className="quick-ref-box">
                             {(SCRABBLE_SHORT[selectedLetter] || []).map(w => <div key={w} className="ref-tag" onClick={() => {setDictSearch(w); fetchDefinition(w);}}>{w}</div>)}
                         </div>
                         <div className="definition-box">
-                            {dictDef?.loading ? "..." : dictDef?.definition || "Select a word"}
+                            {dictDef?.loading ? (
+                                <div style={{textAlign:'center', padding:'20px'}}>SEARCHING...</div>
+                            ) : dictDef?.isLegal ? (
+                                <>
+                                    <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start'}}>
+                                        <h2 className="def-word">{dictDef.word}</h2>
+                                        <span className="legal-badge">LEGAL</span>
+                                    </div>
+                                    <span className="def-type">{dictDef.type}</span>
+                                    <div className="def-text">{dictDef.definition}</div>
+                                </>
+                            ) : dictDef?.error ? (
+                                <div style={{textAlign:'center', padding:'20px'}}>
+                                    <h2 style={{color:'#ff4d4d', margin:0}}>{dictDef.searchWord}</h2>
+                                    <div className="invalid-badge" style={{marginTop:'10px', display:'inline-block'}}>NOT A LEGAL WORD</div>
+                                </div>
+                            ) : (
+                                <div style={{textAlign:'center', opacity:0.3, marginTop:'30px'}}>TYPE A WORD TO VERIFY</div>
+                            )}
                         </div>
                         <button className="menu-btn btn-cont" onClick={() => setView('scores')}>CLOSE</button>
                     </div>
@@ -216,19 +256,19 @@
                 <div className="main-container">
                     {view === 'scores' ? (
                         <>
-                            <div style={{display:'flex', justifyContent:'space-between'}}>
-                                <h1>SCRABBLE</h1>
+                            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                                <h1 style={{margin:0, fontFamily:'Playfair Display', fontSize:'22px'}}>SCRABBLE</h1>
                                 {history.length > 0 && <button className="undo-chip" onClick={() => { setBoard(history[0].board); setScores(history[0].scores); setHistory(history.slice(1)); }}>UNDO</button>}
                             </div>
                             <div className="score-grid">
                                 {playerNames.map((name, i) => (
                                     <div key={i} onClick={() => setActivePlayer(i)} className={`score-card ${activePlayer === i ? 'active' : ''}`}>
-                                        <div style={{fontSize:'10px'}}>{name}</div>
+                                        <div style={{fontSize:'10px', color:'#c4a265', fontWeight:900}}>{name}</div>
                                         <div style={{fontSize:'32px', fontWeight:900}}>{scores[i]?.reduce((a,b)=>a+b.s,0) || 0}</div>
                                     </div>
                                 ))}
                             </div>
-                            <input className="scrabble-input" value={word} onChange={e => setWord(e.target.value.toUpperCase())} placeholder="WORD" />
+                            <input className="scrabble-input" value={word} onChange={e => setWord(e.target.value.toUpperCase())} placeholder="TYPE WORD" />
                             <div style={{display:'flex', gap:'8px', marginTop:'10px'}}>
                                 <button className="menu-btn btn-view-board" style={{flex:1}} onClick={() => { setPendingWord(null); setView('board'); }}>BOARD</button>
                                 <button className="menu-btn btn-cont" style={{flex:1}} onClick={() => { setPendingWord(word); setView('board'); }} disabled={!word}>PLACE</button>
@@ -236,7 +276,7 @@
                             <div className="word-log">
                                 {scores[activePlayer]?.map(e => <div key={e.id} className="log-entry"><span>{e.w}</span><span>+{e.s}</span></div>)}
                             </div>
-                            <button className="menu-btn btn-dict" onClick={() => setView('dictionary')}>📖 DICTIONARY</button>
+                            <button className="menu-btn btn-dict" onClick={() => setView('dictionary')}>📖 DICTIONARY & LEGALITY</button>
                         </>
                     ) : (
                         <div className="board-modal">
