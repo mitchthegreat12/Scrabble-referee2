@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pro Scrabble Referee v33</title>
+    <title>Pro Scrabble Referee v35</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;900&family=Playfair+Display:wght@900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -20,42 +20,53 @@
         .btn-dict { background: #222; color: #c4a265; border: 1px solid #333; margin-top: 5px; font-size: 11px; padding: 12px; }
         .main-container { padding: 15px; box-sizing: border-box; width: 100vw; height: 100vh; display: flex; flex-direction: column; }
         
-        /* Scores & Input */
+        /* Scores & Word Log */
         .score-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 12px 0; flex-shrink: 0; }
         .score-card { padding: 10px; border-radius: 12px; border: 1px solid #333; background: rgba(255,255,255,0.03); text-align: center; }
         .score-card.active { border-color: #7ab648; background: rgba(122,182,72,0.15); box-shadow: 0 0 10px rgba(122,182,72,0.2); }
+        .word-log { flex: 1; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 10px; margin-top: 15px; border: 1px solid #222; }
+        .log-entry { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-bottom: 1px solid #222; font-size: 13px; }
+        .undo-chip { background: #ff4d4d; color: #fff; border: none; padding: 5px 10px; border-radius: 6px; font-weight: 900; font-size: 10px; cursor: pointer; }
+        
         .scrabble-input { width: 100%; max-width: 320px; padding: 16px; background: #FFF; border: 4px solid #c4a265; color: #000; border-radius: 8px; text-align: center; font-size: 22px; font-weight: 900; display: block; margin: 0 auto; text-transform: uppercase; box-sizing: border-box; }
         
-        /* Modals */
-        .board-modal, .dict-modal { position: fixed; inset: 0; background: #0f1c0f; z-index: 8000; display: flex; flex-direction: column; }
-        .board-grid { display: grid; grid-template-columns: repeat(15, 34px); gap: 1px; background: #444; width: fit-content; padding: 20px; margin: 0 auto; }
-        .cell { background: #1a2e1a; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; font-size: 7px; font-weight: bold; position: relative; color: rgba(255,255,255,0.1); }
-        .cell.placed { background: #f5e6c8; color: #000; font-size: 16px; font-weight: 900; border-radius: 2px; }
-        .tw { background: #ff4d4d; color: #fff; } .dw { background: #ffb3b3; color: #333; } .tl { background: #3399ff; color: #fff; } .dl { background: #b3d9ff; color: #333; }
+        /* Board UI */
+        .board-modal { position: fixed; inset: 0; background: #0f1c0f; z-index: 8000; display: flex; flex-direction: column; }
+        .board-wrapper { flex: 1; overflow: auto; background: #111; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .board-grid { display: grid; grid-template-columns: repeat(15, 36px); gap: 1px; background: #444; border: 2px solid #444; }
+        .cell { background: #1a2e1a; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: bold; position: relative; color: rgba(255,255,255,0.2); text-align: center; }
+        .cell.placed { background: #f5e6c8; color: #000; font-size: 18px; font-weight: 900; border-radius: 2px; }
+        .cell.tw { background: #ff4d4d; color: #fff; } 
+        .cell.dw { background: #ffb3b3; color: #333; } 
+        .cell.tl { background: #3399ff; color: #fff; } 
+        .cell.dl { background: #b3d9ff; color: #333; }
+        .cell.star { background: #ffb3b3; color: #333; font-size: 16px; }
+        
         .active-cell { outline: 4px solid #fff; z-index: 10; }
-        .pulse-hook { outline: 3px solid #7ab648; animation: pulse-glow 1s infinite; z-index: 5; }
+        .pulse-hook { outline: 3px solid #7ab648; animation: pulse-glow 1s infinite; z-index: 5; cursor: pointer; }
         @keyframes pulse-glow { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
         
-        /* Dictionary & Points */
+        /* Placement Controls */
+        .controls-overlay { position: absolute; z-index: 100; display: grid; grid-template-areas: ". u ." "l . r" ". d ."; gap: 8px; background: rgba(0,0,0,0.95); padding: 12px; border-radius: 50%; border: 2px solid #c4a265; top: -60px; left: 50%; transform: translateX(-50%); min-width: 100px; min-height: 100px; justify-items: center; align-items: center; }
+        .arrow-btn { width: 40px; height: 40px; background: #c4a265; color: #000; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: 900; font-size: 22px; cursor: pointer; }
+
+        /* LOCKED DICTIONARY UI */
+        .dict-modal { position: fixed; inset: 0; background: #0f1c0f; z-index: 8500; display: flex; flex-direction: column; }
         .definition-box { flex: 1; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid #222; overflow-y: auto; margin-top: 15px; }
         .def-word { font-family: 'Playfair Display'; font-size: 28px; color: #7ab648; text-transform: uppercase; margin: 0; }
         .points-badge { background: #c4a265; color: #000; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 900; margin-top: 5px; display: inline-block; }
         .legal-badge { background: #7ab648; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; }
         .invalid-badge { background: #ff4d4d; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; }
         .def-text { line-height: 1.5; font-size: 14px; color: #ddd; margin-top: 10px; }
-        
-        .controls-overlay { position: absolute; z-index: 100; display: grid; grid-template-areas: ". u ." "l . r" ". d ."; gap: 8px; background: rgba(0,0,0,0.95); padding: 12px; border-radius: 50%; border: 2px solid #c4a265; top: -55px; min-width: 100px; min-height: 100px; justify-items: center; align-items: center; }
-        .arrow-btn { width: 38px; height: 38px; background: #c4a265; color: #000; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: 900; font-size: 20px; }
-        .undo-chip { background: #444; color: #fff; border: none; padding: 5px 10px; border-radius: 6px; font-weight: 900; font-size: 10px; margin-left: 8px; }
     </style>
 </head>
 <body>
     <div id="root"></div>
     <script type="text/babel">
-        const { useState, useEffect, useRef, useMemo } = React;
+        const { useState, useEffect, useMemo } = React;
 
         const L_VALS = { A:1, B:3, C:3, D:2, E:1, F:4, G:2, H:4, I:1, J:8, K:5, L:1, M:3, N:1, O:1, P:3, Q:10, R:1, S:1, T:1, U:1, V:4, W:4, X:8, Y:4, Z:10 };
-        const TW = [0, 7, 14, 105, 119, 210, 217, 224], DW = [16, 28, 32, 42, 48, 56, 64, 70, 112, 154, 160, 168, 176, 182, 192, 196, 208], TL = [20, 24, 76, 80, 84, 88, 136, 140, 144, 148, 200, 204], DL = [3, 11, 36, 38, 45, 52, 59, 92, 96, 98, 102, 108, 116, 122, 126, 128, 132, 165, 172, 179, 186, 188, 213, 221];
+        const TW = [0, 7, 14, 105, 119, 210, 217, 224], DW = [16, 28, 32, 42, 48, 56, 64, 70, 154, 160, 168, 176, 182, 192, 196, 208], TL = [20, 24, 76, 80, 84, 88, 136, 140, 144, 148, 200, 204], DL = [3, 11, 36, 38, 45, 52, 59, 92, 96, 98, 102, 108, 116, 122, 126, 128, 132, 165, 172, 179, 186, 188, 213, 221];
 
         function App() {
             const [view, setView] = useState('splash');
@@ -64,22 +75,24 @@
             const [board, setBoard] = useState(Array(225).fill(null));
             const [activePlayer, setActivePlayer] = useState(0);
             const [history, setHistory] = useState([]);
-            
             const [word, setWord] = useState("");
             const [pendingWord, setPendingWord] = useState(null);
             const [cursor, setCursor] = useState(null);
             const [validDirs, setValidDirs] = useState([]);
-
             const [dictSearch, setDictSearch] = useState("");
             const [dictDef, setDictDef] = useState(null);
 
             const isBoardEmpty = useMemo(() => board.every(c => c === null), [board]);
+
             const legalHooks = useMemo(() => {
                 if (isBoardEmpty) return [112];
                 if (!pendingWord) return [];
-                return board.map((tile, i) => (tile !== null && pendingWord.includes(tile)) ? i : null).filter(i => i !== null);
+                const hooks = [];
+                board.forEach((tile, i) => { if (tile && pendingWord.includes(tile)) hooks.push(i); });
+                return hooks;
             }, [board, isBoardEmpty, pendingWord]);
 
+            // Dictionary Effect
             useEffect(() => {
                 const timer = setTimeout(() => { if (dictSearch.length > 1) fetchDefinition(dictSearch); }, 600);
                 return () => clearTimeout(timer);
@@ -94,13 +107,7 @@
                     if (res.ok) {
                         const cleanWord = data[0].word.toUpperCase();
                         const baseScore = [...cleanWord].reduce((acc, char) => acc + (L_VALS[char] || 0), 0);
-                        setDictDef({ 
-                            word: cleanWord, 
-                            type: data[0].meanings[0].partOfSpeech, 
-                            definition: data[0].meanings[0].definitions[0].definition,
-                            baseScore: baseScore,
-                            isLegal: true 
-                        });
+                        setDictDef({ word: cleanWord, type: data[0].meanings[0].partOfSpeech, definition: data[0].meanings[0].definitions[0].definition, baseScore, isLegal: true });
                     } else { setDictDef({error: true, searchWord: w, isLegal: false}); }
                 } catch { setDictDef({error: true, searchWord: w, isLegal: false}); }
             };
@@ -108,20 +115,19 @@
             const getPlacementDetails = (hookIdx, dir, wordStr, currentBoard) => {
                 let actualStart, step, orientation;
                 if (currentBoard.every(c => c === null)) {
-                    if (dir === 'right') { actualStart = hookIdx; step = 1; orientation = 'h'; }
-                    else if (dir === 'down') { actualStart = hookIdx; step = 15; orientation = 'v'; }
+                    actualStart = hookIdx; step = (dir === 'right' ? 1 : 15); orientation = (dir === 'right' ? 'h' : 'v');
                 } else {
                     const hookLetter = currentBoard[hookIdx];
                     const letterIndexInWord = wordStr.indexOf(hookLetter);
                     if (dir === 'right') { actualStart = hookIdx - letterIndexInWord; step = 1; orientation = 'h'; }
-                    else if (dir === 'down') { actualStart = hookIdx - (letterIndexInWord * 15); step = 15; orientation = 'v'; }
+                    else { actualStart = hookIdx - (letterIndexInWord * 15); step = 15; orientation = 'v'; }
                 }
                 return { actualStart, step, orientation };
             };
 
             const validateMove = (hookIdx, dir, wordStr, currentBoard) => {
                 const details = getPlacementDetails(hookIdx, dir, wordStr, currentBoard);
-                if (!details || details.actualStart < 0) return false;
+                if (details.actualStart < 0) return false;
                 let curr = details.actualStart;
                 for(let i=0; i<wordStr.length; i++) {
                     if (curr < 0 || curr >= 225) return false;
@@ -148,7 +154,7 @@
                         let letterMult = 1;
                         if (DL.includes(curr)) letterMult = 2;
                         if (TL.includes(curr)) letterMult = 3;
-                        if (DW.includes(curr)) wordMult *= 2;
+                        if (DW.includes(curr) || curr === 112) wordMult *= 2;
                         if (TW.includes(curr)) wordMult *= 3;
                         calculatedPoints += (lVal * letterMult);
                         nb[curr] = letter;
@@ -167,6 +173,24 @@
                 setCursor(null);
                 setActivePlayer((prev) => (prev + 1) % playerNames.length);
                 setView('scores');
+            };
+
+            const getCellClass = (i) => {
+                if (i === 112) return 'star';
+                if (TW.includes(i)) return 'tw';
+                if (DW.includes(i)) return 'dw';
+                if (TL.includes(i)) return 'tl';
+                if (DL.includes(i)) return 'dl';
+                return '';
+            };
+
+            const getCellLabel = (i) => {
+                if (i === 112) return '★';
+                if (TW.includes(i)) return '3W';
+                if (DW.includes(i)) return '2W';
+                if (TL.includes(i)) return '3L';
+                if (DL.includes(i)) return '2L';
+                return '';
             };
 
             if (view === 'splash') return (
@@ -203,32 +227,18 @@
                     <div className="main-container">
                         <h2 style={{textAlign:'center', fontFamily:'Playfair Display', fontSize:'18px', marginBottom:'15px'}}>WORD REFEREE</h2>
                         <input className="scrabble-input" placeholder="SEARCH WORD..." value={dictSearch} onChange={(e) => setDictSearch(e.target.value.toUpperCase())} />
-                        
                         <div className="definition-box">
-                            {dictDef?.loading ? (
-                                <div style={{textAlign:'center', padding:'20px'}}>SEARCHING...</div>
-                            ) : dictDef?.isLegal ? (
+                            {dictDef?.loading ? ( <div style={{textAlign:'center', padding:'20px'}}>SEARCHING...</div> ) : dictDef?.isLegal ? (
                                 <>
                                     <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start'}}>
-                                        <div>
-                                            <h2 className="def-word">{dictDef.word}</h2>
-                                            <div className="points-badge">{dictDef.baseScore} BASE POINTS</div>
-                                        </div>
+                                        <div><h2 className="def-word">{dictDef.word}</h2><div className="points-badge">{dictDef.baseScore} BASE POINTS</div></div>
                                         <span className="legal-badge">LEGAL</span>
                                     </div>
-                                    <div style={{marginTop:'15px'}}>
-                                        <span style={{fontStyle:'italic', color:'#c4a265', fontSize:'12px'}}>{dictDef.type}</span>
-                                        <div className="def-text">{dictDef.definition}</div>
-                                    </div>
+                                    <div style={{marginTop:'15px'}}><span style={{fontStyle:'italic', color:'#c4a265', fontSize:'12px'}}>{dictDef.type}</span><div className="def-text">{dictDef.definition}</div></div>
                                 </>
                             ) : dictDef?.error ? (
-                                <div style={{textAlign:'center', padding:'20px'}}>
-                                    <h2 style={{color:'#ff4d4d', margin:0}}>{dictDef.searchWord}</h2>
-                                    <div className="invalid-badge" style={{marginTop:'10px', display:'inline-block'}}>NOT IN DICTIONARY</div>
-                                </div>
-                            ) : (
-                                <div style={{textAlign:'center', opacity:0.3, marginTop:'30px'}}>SEARCH TO VERIFY LEGALITY</div>
-                            )}
+                                <div style={{textAlign:'center', padding:'20px'}}><h2 style={{color:'#ff4d4d', margin:0}}>{dictDef.searchWord}</h2><div className="invalid-badge" style={{marginTop:'10px', display:'inline-block'}}>NOT IN DICTIONARY</div></div>
+                            ) : ( <div style={{textAlign:'center', opacity:0.3, marginTop:'30px'}}>SEARCH TO VERIFY</div> )}
                         </div>
                         <button className="menu-btn btn-cont" onClick={() => setView('scores')}>CLOSE</button>
                     </div>
@@ -237,12 +247,12 @@
 
             return (
                 <div className="main-container">
-                    <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-                        <h1 style={{margin:0, fontFamily:'Playfair Display', fontSize:'22px'}}>SCRABBLE</h1>
-                        {history.length > 0 && <button className="undo-chip" onClick={() => { setBoard(history[0].board); setScores(history[0].scores); setHistory(history.slice(1)); }}>UNDO</button>}
-                    </div>
                     {view === 'scores' ? (
                         <>
+                            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                                <h1 style={{margin:0, fontFamily:'Playfair Display', fontSize:'22px'}}>SCRABBLE</h1>
+                                {history.length > 0 && <button className="undo-chip" onClick={() => { setBoard(history[0].board); setScores(history[0].scores); setHistory(history.slice(1)); }}>UNDO PREVIOUS</button>}
+                            </div>
                             <div className="score-grid">
                                 {playerNames.map((name, i) => (
                                     <div key={i} onClick={() => setActivePlayer(i)} className={`score-card ${activePlayer === i ? 'active' : ''}`}>
@@ -257,20 +267,23 @@
                                 <button className="menu-btn btn-cont" style={{flex:1}} onClick={() => { setPendingWord(word); setView('board'); }} disabled={!word}>PLACE</button>
                             </div>
                             <div className="word-log">
+                                <h3 style={{fontSize:'12px', margin:'0 0 10px 0', color:'#c4a265'}}>PLACED WORDS</h3>
                                 {scores[activePlayer]?.map(e => <div key={e.id} className="log-entry"><span>{e.w}</span><span>+{e.s}</span></div>)}
                             </div>
                             <button className="menu-btn btn-dict" onClick={() => setView('dictionary')}>📖 DICTIONARY & BASE POINTS</button>
                         </>
                     ) : (
                         <div className="board-modal">
-                            <div style={{flex:1, overflow:'auto', background:'#111', display:'flex', alignItems:'center'}}>
+                            <div className="board-wrapper">
                                 <div className="board-grid">
                                     {board.map((tile, i) => {
                                         const isHook = pendingWord && legalHooks.includes(i);
                                         const showArrows = cursor === i && pendingWord;
                                         return (
-                                            <div key={i} onClick={() => { if(!legalHooks.includes(i)) return; setCursor(i); setValidDirs(['right','down'].filter(d => validateMove(i, d, pendingWord, board))); }} className={`cell ${tile?'placed':''} ${cursor===i?'active-cell':''} ${isHook?'pulse-hook':''}`}>
-                                                {tile || ''}
+                                            <div key={i} 
+                                                 onClick={() => { if(pendingWord && legalHooks.includes(i)) { setCursor(i); setValidDirs(['right','down'].filter(d => validateMove(i, d, pendingWord, board))); } }} 
+                                                 className={`cell ${tile?'placed':''} ${getCellClass(i)} ${cursor===i?'active-cell':''} ${isHook?'pulse-hook':''}`}>
+                                                {tile || getCellLabel(i)}
                                                 {showArrows && (
                                                     <div className="controls-overlay" onClick={e => e.stopPropagation()}>
                                                         {validDirs.map(d => <div key={d} className="arrow-btn" style={{gridArea: d[0]}} onClick={() => executePlacement(i, d)}>{d==='down'?'↓':'→'}</div>)}
@@ -281,7 +294,9 @@
                                     })}
                                 </div>
                             </div>
-                            <button className="menu-btn btn-cont" onClick={()=>setView('scores')}>BACK</button>
+                            <div style={{padding:'15px', background:'#0f1c0f'}}>
+                                <button className="menu-btn btn-cont" onClick={()=>setView('scores')}>BACK TO SCORES</button>
+                            </div>
                         </div>
                     )}
                 </div>
