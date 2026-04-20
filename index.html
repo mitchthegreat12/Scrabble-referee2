@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pro Scrabble Referee v35</title>
+    <title>Pro Scrabble Referee v36</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;900&family=Playfair+Display:wght@900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -28,7 +28,10 @@
         .log-entry { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-bottom: 1px solid #222; font-size: 13px; }
         .undo-chip { background: #ff4d4d; color: #fff; border: none; padding: 5px 10px; border-radius: 6px; font-weight: 900; font-size: 10px; cursor: pointer; }
         
-        .scrabble-input { width: 100%; max-width: 320px; padding: 16px; background: #FFF; border: 4px solid #c4a265; color: #000; border-radius: 8px; text-align: center; font-size: 22px; font-weight: 900; display: block; margin: 0 auto; text-transform: uppercase; box-sizing: border-box; }
+        /* Validation Input */
+        .scrabble-input { width: 100%; max-width: 320px; padding: 16px; background: #FFF; border: 4px solid #444; color: #000; border-radius: 8px; text-align: center; font-size: 22px; font-weight: 900; display: block; margin: 0 auto; text-transform: uppercase; box-sizing: border-box; outline: none; transition: border-color 0.2s; }
+        .input-valid { border-color: #7ab648 !important; box-shadow: 0 0 15px rgba(122,182,72,0.3); }
+        .input-invalid { border-color: #ff4d4d !important; box-shadow: 0 0 15px rgba(255,77,77,0.3); }
         
         /* Board UI */
         .board-modal { position: fixed; inset: 0; background: #0f1c0f; z-index: 8000; display: flex; flex-direction: column; }
@@ -76,6 +79,7 @@
             const [activePlayer, setActivePlayer] = useState(0);
             const [history, setHistory] = useState([]);
             const [word, setWord] = useState("");
+            const [isValidWord, setIsValidWord] = useState(null);
             const [pendingWord, setPendingWord] = useState(null);
             const [cursor, setCursor] = useState(null);
             const [validDirs, setValidDirs] = useState([]);
@@ -92,7 +96,19 @@
                 return hooks;
             }, [board, isBoardEmpty, pendingWord]);
 
-            // Dictionary Effect
+            // Live Validation logic for typing
+            useEffect(() => {
+                if (word.length < 2) { setIsValidWord(null); return; }
+                const timer = setTimeout(async () => {
+                    try {
+                        const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word.toLowerCase()}`);
+                        setIsValidWord(res.ok);
+                    } catch { setIsValidWord(false); }
+                }, 400);
+                return () => clearTimeout(timer);
+            }, [word]);
+
+            // Locked Dictionary Logic
             useEffect(() => {
                 const timer = setTimeout(() => { if (dictSearch.length > 1) fetchDefinition(dictSearch); }, 600);
                 return () => clearTimeout(timer);
@@ -170,6 +186,7 @@
                 setBoard(nb);
                 setPendingWord(null);
                 setWord("");
+                setIsValidWord(null);
                 setCursor(null);
                 setActivePlayer((prev) => (prev + 1) % playerNames.length);
                 setView('scores');
@@ -261,10 +278,15 @@
                                     </div>
                                 ))}
                             </div>
-                            <input className="scrabble-input" value={word} onChange={e => setWord(e.target.value.toUpperCase())} placeholder="TYPE WORD" />
+                            <input 
+                                className={`scrabble-input ${isValidWord === true ? 'input-valid' : isValidWord === false ? 'input-invalid' : ''}`} 
+                                value={word} 
+                                onChange={e => setWord(e.target.value.toUpperCase())} 
+                                placeholder="TYPE WORD" 
+                            />
                             <div style={{display:'flex', gap:'8px', marginTop:'10px'}}>
                                 <button className="menu-btn btn-view-board" style={{flex:1}} onClick={() => { setPendingWord(null); setView('board'); }}>BOARD</button>
-                                <button className="menu-btn btn-cont" style={{flex:1}} onClick={() => { setPendingWord(word); setView('board'); }} disabled={!word}>PLACE</button>
+                                <button className="menu-btn btn-cont" style={{flex:1}} onClick={() => { setPendingWord(word); setView('board'); }} disabled={!isValidWord}>PLACE</button>
                             </div>
                             <div className="word-log">
                                 <h3 style={{fontSize:'12px', margin:'0 0 10px 0', color:'#c4a265'}}>PLACED WORDS</h3>
