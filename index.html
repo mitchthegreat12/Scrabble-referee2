@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pro Scrabble Referee v32</title>
+    <title>Pro Scrabble Referee v33</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;900&family=Playfair+Display:wght@900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -19,39 +19,33 @@
         .btn-view-board { background: transparent; color: #c4a265; border: 2px solid #c4a265; }
         .btn-dict { background: #222; color: #c4a265; border: 1px solid #333; margin-top: 5px; font-size: 11px; padding: 12px; }
         .main-container { padding: 15px; box-sizing: border-box; width: 100vw; height: 100vh; display: flex; flex-direction: column; }
+        
+        /* Scores & Input */
         .score-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 12px 0; flex-shrink: 0; }
-        .score-card { padding: 10px; border-radius: 12px; border: 1px solid #333; background: rgba(255,255,255,0.03); text-align: center; transition: 0.3s; }
+        .score-card { padding: 10px; border-radius: 12px; border: 1px solid #333; background: rgba(255,255,255,0.03); text-align: center; }
         .score-card.active { border-color: #7ab648; background: rgba(122,182,72,0.15); box-shadow: 0 0 10px rgba(122,182,72,0.2); }
-        .word-log { flex: 1; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 10px; margin-top: 15px; border: 1px solid #222; }
-        .log-entry { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-bottom: 1px solid #222; font-size: 13px; }
         .scrabble-input { width: 100%; max-width: 320px; padding: 16px; background: #FFF; border: 4px solid #c4a265; color: #000; border-radius: 8px; text-align: center; font-size: 22px; font-weight: 900; display: block; margin: 0 auto; text-transform: uppercase; box-sizing: border-box; }
         
+        /* Modals */
         .board-modal, .dict-modal { position: fixed; inset: 0; background: #0f1c0f; z-index: 8000; display: flex; flex-direction: column; }
         .board-grid { display: grid; grid-template-columns: repeat(15, 34px); gap: 1px; background: #444; width: fit-content; padding: 20px; margin: 0 auto; }
         .cell { background: #1a2e1a; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; font-size: 7px; font-weight: bold; position: relative; color: rgba(255,255,255,0.1); }
         .cell.placed { background: #f5e6c8; color: #000; font-size: 16px; font-weight: 900; border-radius: 2px; }
         .tw { background: #ff4d4d; color: #fff; } .dw { background: #ffb3b3; color: #333; } .tl { background: #3399ff; color: #fff; } .dl { background: #b3d9ff; color: #333; }
+        .active-cell { outline: 4px solid #fff; z-index: 10; }
         .pulse-hook { outline: 3px solid #7ab648; animation: pulse-glow 1s infinite; z-index: 5; }
         @keyframes pulse-glow { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-        .active-cell { outline: 4px solid #fff; z-index: 10; }
+        
+        /* Dictionary & Points */
+        .definition-box { flex: 1; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid #222; overflow-y: auto; margin-top: 15px; }
+        .def-word { font-family: 'Playfair Display'; font-size: 28px; color: #7ab648; text-transform: uppercase; margin: 0; }
+        .points-badge { background: #c4a265; color: #000; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 900; margin-top: 5px; display: inline-block; }
+        .legal-badge { background: #7ab648; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; }
+        .invalid-badge { background: #ff4d4d; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; }
+        .def-text { line-height: 1.5; font-size: 14px; color: #ddd; margin-top: 10px; }
+        
         .controls-overlay { position: absolute; z-index: 100; display: grid; grid-template-areas: ". u ." "l . r" ". d ."; gap: 8px; background: rgba(0,0,0,0.95); padding: 12px; border-radius: 50%; border: 2px solid #c4a265; top: -55px; min-width: 100px; min-height: 100px; justify-items: center; align-items: center; }
         .arrow-btn { width: 38px; height: 38px; background: #c4a265; color: #000; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: 900; font-size: 20px; }
-
-        /* Dictionary Styling */
-        .wheel-container { height: 80px; overflow-y: scroll; scroll-snap-type: y mandatory; background: #1a2e1a; margin-bottom: 10px; border: 1px solid #333; border-radius: 8px; position: relative; }
-        .wheel-item { height: 40px; line-height: 40px; text-align: center; font-size: 18px; font-weight: 900; scroll-snap-align: center; color: #444; }
-        .wheel-item.selected { color: #f5e6c8; font-size: 28px; }
-        .wheel-marker { position: absolute; top: 20px; left: 0; right: 0; height: 40px; border-top: 1px solid #7ab648; border-bottom: 1px solid #7ab648; pointer-events: none; background: rgba(122,182,72,0.1); }
-        .quick-ref-box { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 5px; max-height: 60px; overflow-y: auto; }
-        .ref-tag { background: #222; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; color: #7ab648; border: 1px solid #333; }
-        
-        .definition-box { flex: 1; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid #222; overflow-y: auto; }
-        .def-word { font-family: 'Playfair Display'; font-size: 24px; color: #7ab648; text-transform: uppercase; margin: 0; }
-        .def-type { font-style: italic; color: #c4a265; font-size: 11px; display: block; margin-bottom: 10px; }
-        .def-text { line-height: 1.5; font-size: 14px; color: #ddd; }
-        .legal-badge { background: #7ab648; color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; height: fit-content; }
-        .invalid-badge { background: #ff4d4d; color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; }
-        
         .undo-chip { background: #444; color: #fff; border: none; padding: 5px 10px; border-radius: 6px; font-weight: 900; font-size: 10px; margin-left: 8px; }
     </style>
 </head>
@@ -62,7 +56,6 @@
 
         const L_VALS = { A:1, B:3, C:3, D:2, E:1, F:4, G:2, H:4, I:1, J:8, K:5, L:1, M:3, N:1, O:1, P:3, Q:10, R:1, S:1, T:1, U:1, V:4, W:4, X:8, Y:4, Z:10 };
         const TW = [0, 7, 14, 105, 119, 210, 217, 224], DW = [16, 28, 32, 42, 48, 56, 64, 70, 112, 154, 160, 168, 176, 182, 192, 196, 208], TL = [20, 24, 76, 80, 84, 88, 136, 140, 144, 148, 200, 204], DL = [3, 11, 36, 38, 45, 52, 59, 92, 96, 98, 102, 108, 116, 122, 126, 128, 132, 165, 172, 179, 186, 188, 213, 221];
-        const SCRABBLE_SHORT = { A:["AA","AB","AD","AE","AG","AH","AI","AL","AM","AN","AR","AS","AT","AW","AX","AY"], B:["BA","BE","BI","BO","BY"], J:["JO","JAB","JAG","JAM","JAR","JAW","JAY"], Q:["QI","QUA"], Z:["ZA","ZAG","ZAP"] };
 
         function App() {
             const [view, setView] = useState('splash');
@@ -77,10 +70,8 @@
             const [cursor, setCursor] = useState(null);
             const [validDirs, setValidDirs] = useState([]);
 
-            // Dictionary States
             const [dictSearch, setDictSearch] = useState("");
             const [dictDef, setDictDef] = useState(null);
-            const [selectedLetter, setSelectedLetter] = useState("A");
 
             const isBoardEmpty = useMemo(() => board.every(c => c === null), [board]);
             const legalHooks = useMemo(() => {
@@ -89,7 +80,6 @@
                 return board.map((tile, i) => (tile !== null && pendingWord.includes(tile)) ? i : null).filter(i => i !== null);
             }, [board, isBoardEmpty, pendingWord]);
 
-            // Debounced Search Logic
             useEffect(() => {
                 const timer = setTimeout(() => { if (dictSearch.length > 1) fetchDefinition(dictSearch); }, 600);
                 return () => clearTimeout(timer);
@@ -102,18 +92,17 @@
                     const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${w.toLowerCase()}`);
                     const data = await res.json();
                     if (res.ok) {
+                        const cleanWord = data[0].word.toUpperCase();
+                        const baseScore = [...cleanWord].reduce((acc, char) => acc + (L_VALS[char] || 0), 0);
                         setDictDef({ 
-                            word: data[0].word, 
+                            word: cleanWord, 
                             type: data[0].meanings[0].partOfSpeech, 
                             definition: data[0].meanings[0].definitions[0].definition,
+                            baseScore: baseScore,
                             isLegal: true 
                         });
                     } else { setDictDef({error: true, searchWord: w, isLegal: false}); }
                 } catch { setDictDef({error: true, searchWord: w, isLegal: false}); }
-            };
-
-            const pushHistory = () => {
-                setHistory(prev => [{ board: [...board], scores: JSON.parse(JSON.stringify(scores)), activePlayer }, ...prev].slice(0, 10));
             };
 
             const getPlacementDetails = (hookIdx, dir, wordStr, currentBoard) => {
@@ -145,7 +134,8 @@
 
             const executePlacement = (hookIdx, dir) => {
                 const details = getPlacementDetails(hookIdx, dir, pendingWord, board);
-                pushHistory();
+                setHistory(prev => [{ board: [...board], scores: JSON.parse(JSON.stringify(scores)), activePlayer }, ...prev].slice(0, 10));
+                
                 const nb = [...board];
                 let curr = details.actualStart;
                 let calculatedPoints = 0;
@@ -200,14 +190,9 @@
                 <div className="splash-screen">
                     <h2>NAMES</h2>
                     {playerNames.map((n, i) => (
-                        <input 
-                            key={i} 
-                            className="scrabble-input" 
-                            style={{margin:'5px 0', fontSize:'16px'}} 
-                            value={n} 
-                            onFocus={(e) => { if(e.target.value.includes("PLAYER")) { const next = [...playerNames]; next[i] = ""; setPlayerNames(next); } }}
-                            onChange={e => { const next = [...playerNames]; next[i] = e.target.value.toUpperCase(); setPlayerNames(next); }} 
-                        />
+                        <input key={i} className="scrabble-input" style={{margin:'5px 0', fontSize:'16px'}} value={n} 
+                               onFocus={(e) => { if(e.target.value.includes("PLAYER")) { const next = [...playerNames]; next[i] = ""; setPlayerNames(next); } }}
+                               onChange={e => { const next = [...playerNames]; next[i] = e.target.value.toUpperCase(); setPlayerNames(next); }} />
                     ))}
                     <button className="menu-btn btn-cont" style={{marginTop:'20px'}} onClick={() => { setScores(new Array(playerNames.length).fill([])); setView('scores'); }}>START GAME</button>
                 </div>
@@ -216,35 +201,33 @@
             if (view === 'dictionary') return (
                 <div className="dict-modal">
                     <div className="main-container">
+                        <h2 style={{textAlign:'center', fontFamily:'Playfair Display', fontSize:'18px', marginBottom:'15px'}}>WORD REFEREE</h2>
                         <input className="scrabble-input" placeholder="SEARCH WORD..." value={dictSearch} onChange={(e) => setDictSearch(e.target.value.toUpperCase())} />
-                        <div className="wheel-container" onScroll={(e) => setSelectedLetter("ABCDEFGHIJKLMNOPQRSTUVWXYZ"[Math.round(e.target.scrollTop/40)])}>
-                            <div className="wheel-marker"></div>
-                            <div style={{height:'20px'}}></div>
-                            {"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(l => <div key={l} className={`wheel-item ${selectedLetter===l?'selected':''}`}>{l}</div>)}
-                            <div style={{height:'20px'}}></div>
-                        </div>
-                        <div className="quick-ref-box">
-                            {(SCRABBLE_SHORT[selectedLetter] || []).map(w => <div key={w} className="ref-tag" onClick={() => {setDictSearch(w); fetchDefinition(w);}}>{w}</div>)}
-                        </div>
+                        
                         <div className="definition-box">
                             {dictDef?.loading ? (
                                 <div style={{textAlign:'center', padding:'20px'}}>SEARCHING...</div>
                             ) : dictDef?.isLegal ? (
                                 <>
                                     <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start'}}>
-                                        <h2 className="def-word">{dictDef.word}</h2>
+                                        <div>
+                                            <h2 className="def-word">{dictDef.word}</h2>
+                                            <div className="points-badge">{dictDef.baseScore} BASE POINTS</div>
+                                        </div>
                                         <span className="legal-badge">LEGAL</span>
                                     </div>
-                                    <span className="def-type">{dictDef.type}</span>
-                                    <div className="def-text">{dictDef.definition}</div>
+                                    <div style={{marginTop:'15px'}}>
+                                        <span style={{fontStyle:'italic', color:'#c4a265', fontSize:'12px'}}>{dictDef.type}</span>
+                                        <div className="def-text">{dictDef.definition}</div>
+                                    </div>
                                 </>
                             ) : dictDef?.error ? (
                                 <div style={{textAlign:'center', padding:'20px'}}>
                                     <h2 style={{color:'#ff4d4d', margin:0}}>{dictDef.searchWord}</h2>
-                                    <div className="invalid-badge" style={{marginTop:'10px', display:'inline-block'}}>NOT A LEGAL WORD</div>
+                                    <div className="invalid-badge" style={{marginTop:'10px', display:'inline-block'}}>NOT IN DICTIONARY</div>
                                 </div>
                             ) : (
-                                <div style={{textAlign:'center', opacity:0.3, marginTop:'30px'}}>TYPE A WORD TO VERIFY</div>
+                                <div style={{textAlign:'center', opacity:0.3, marginTop:'30px'}}>SEARCH TO VERIFY LEGALITY</div>
                             )}
                         </div>
                         <button className="menu-btn btn-cont" onClick={() => setView('scores')}>CLOSE</button>
@@ -254,12 +237,12 @@
 
             return (
                 <div className="main-container">
+                    <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                        <h1 style={{margin:0, fontFamily:'Playfair Display', fontSize:'22px'}}>SCRABBLE</h1>
+                        {history.length > 0 && <button className="undo-chip" onClick={() => { setBoard(history[0].board); setScores(history[0].scores); setHistory(history.slice(1)); }}>UNDO</button>}
+                    </div>
                     {view === 'scores' ? (
                         <>
-                            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-                                <h1 style={{margin:0, fontFamily:'Playfair Display', fontSize:'22px'}}>SCRABBLE</h1>
-                                {history.length > 0 && <button className="undo-chip" onClick={() => { setBoard(history[0].board); setScores(history[0].scores); setHistory(history.slice(1)); }}>UNDO</button>}
-                            </div>
                             <div className="score-grid">
                                 {playerNames.map((name, i) => (
                                     <div key={i} onClick={() => setActivePlayer(i)} className={`score-card ${activePlayer === i ? 'active' : ''}`}>
@@ -276,7 +259,7 @@
                             <div className="word-log">
                                 {scores[activePlayer]?.map(e => <div key={e.id} className="log-entry"><span>{e.w}</span><span>+{e.s}</span></div>)}
                             </div>
-                            <button className="menu-btn btn-dict" onClick={() => setView('dictionary')}>📖 DICTIONARY & LEGALITY</button>
+                            <button className="menu-btn btn-dict" onClick={() => setView('dictionary')}>📖 DICTIONARY & BASE POINTS</button>
                         </>
                     ) : (
                         <div className="board-modal">
