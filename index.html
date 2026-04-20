@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pro Scrabble Referee v38</title>
+    <title>Pro Scrabble Referee v39</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;900&family=Playfair+Display:wght@900&family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -14,18 +14,18 @@
         body { margin: 0; background: #0f1c0f; color: #f5e6c8; font-family: 'Montserrat', sans-serif; overflow: hidden; -webkit-tap-highlight-color: transparent; }
         .main-container { padding: 15px; box-sizing: border-box; width: 100vw; height: 100vh; display: flex; flex-direction: column; }
         
-        /* TILE AUGMENTATION STYLES */
+        /* TILE POINT STYLING */
         .tile { background: #f5e6c8; color: #000; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; border-radius: 3px; position: relative; font-size: 20px; font-weight: 900; box-shadow: 0 2px 4px rgba(0,0,0,0.4); }
-        .tile-meta { position: absolute; bottom: 1px; right: 2px; display: flex; align-items: baseline; gap: 2px; }
+        .tile-meta { position: absolute; bottom: 1px; right: 2px; display: flex; align-items: baseline; }
         
-        .base-pts { font-size: 8px; opacity: 0.8; font-weight: 900; }
+        /* Ink Look */
+        .base-pts { font-size: 8px; color: #000; font-weight: 900; }
+        .strike-ink { font-size: 8px; color: #000; font-weight: 900; text-decoration: line-through; text-decoration-thickness: 1.5px; opacity: 0.7; }
         
-        /* The Augmented Point Style */
-        .aug-wrap { display: flex; align-items: center; background: rgba(0,0,0,0.1); padding: 1px 3px; border-radius: 3px; }
-        .strike-pts { font-size: 7px; text-decoration: line-through; opacity: 0.5; color: #721c24; font-weight: 900; }
-        .new-pts { font-family: 'Orbitron'; font-size: 10px; color: #155724; font-weight: 900; margin-left: 2px; }
+        /* Forest Green Digital Look */
+        .new-pts-forest { font-family: 'Orbitron'; font-size: 11px; color: #228B22; font-weight: 900; margin-left: 1px; text-shadow: 0 0 1px rgba(34,139,34,0.3); }
 
-        /* MULTIPLIER COLORS */
+        /* Board Colors */
         .tw { background: #ff4d4d !important; color: #fff; } 
         .dw { background: #ffb3b3 !important; color: #333; } 
         .tl { background: #3399ff !important; color: #fff; } 
@@ -33,26 +33,20 @@
         .star { background: #ffb3b3 !important; color: #333; }
 
         /* BINGO POPUP */
-        .bingo-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; align-items: center; justify-content: center; text-align: center; animation: fadeIn 0.3s; }
-        .bingo-card { background: #f5e6c8; color: #000; padding: 30px; border-radius: 20px; border: 5px solid #7ab648; max-width: 80%; }
-        .bingo-card h2 { font-family: 'Orbitron'; margin: 0; color: #7ab648; }
-        .bingo-card p { font-size: 14px; line-height: 1.4; font-weight: 600; margin: 15px 0; }
-        .rule-link { color: #3399ff; text-decoration: underline; font-size: 12px; cursor: pointer; }
-
-        /* REST OF UI */
-        .score-card { padding: 10px; border-radius: 12px; border: 1px solid #333; background: rgba(255,255,255,0.03); text-align: center; }
-        .score-card.active { border-color: #7ab648; background: rgba(122,182,72,0.15); }
+        .bingo-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.3s; }
+        .bingo-card { background: #f5e6c8; color: #000; padding: 30px; border-radius: 20px; border: 6px solid #228B22; text-align: center; max-width: 85%; }
+        
+        /* Grid Layout */
         .board-wrapper { flex: 1; overflow: auto; background: #111; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .board-grid { display: grid; grid-template-columns: repeat(15, 40px); gap: 1px; background: #444; }
         .cell { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 900; position: relative; background: #1a2e1a; color: rgba(255,255,255,0.2); }
-        .active-cell { outline: 4px solid #fff; z-index: 10; }
         .pulse-hook { outline: 3px solid #7ab648; animation: pulse-glow 1s infinite; z-index: 5; }
         @keyframes pulse-glow { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .menu-btn { width: 100%; padding: 18px; margin: 10px 0; border-radius: 12px; border: none; font-family: 'Montserrat'; font-weight: 900; cursor: pointer; }
         .btn-cont { background: #7ab648; color: #fff; }
-        .scrabble-input { width: 100%; padding: 16px; border-radius: 8px; text-align: center; font-size: 22px; font-weight: 900; border: 4px solid #444; outline: none; box-sizing: border-box; }
+        .scrabble-input { width: 100%; padding: 16px; border-radius: 8px; text-align: center; font-size: 22px; font-weight: 900; border: 4px solid #444; box-sizing: border-box; }
         .input-valid { border-color: #7ab648; }
         .input-invalid { border-color: #ff4d4d; }
     </style>
@@ -76,8 +70,8 @@
             const [isValidWord, setIsValidWord] = useState(null);
             const [pendingWord, setPendingWord] = useState(null);
             const [cursor, setCursor] = useState(null);
-            const [validDirs, setValidDirs] = useState([]);
             const [showBingo, setShowBingo] = useState(false);
+            const [bingoData, setBingoData] = useState({w: "", s: 0});
 
             const isBoardEmpty = useMemo(() => board.every(c => c === null), [board]);
             const legalHooks = useMemo(() => {
@@ -105,8 +99,8 @@
                     actualStart = 112; step = (dir === 'right' ? 1 : 15);
                 } else {
                     const hookLetter = board[hookIdx];
-                    const letterIndexInWord = wordStr.indexOf(hookLetter);
-                    actualStart = dir === 'right' ? hookIdx - letterIndexInWord : hookIdx - (letterIndexInWord * 15);
+                    const letterIdx = wordStr.indexOf(hookLetter);
+                    actualStart = dir === 'right' ? hookIdx - letterIdx : hookIdx - (letterIdx * 15);
                     step = dir === 'right' ? 1 : 15;
                 }
 
@@ -114,38 +108,42 @@
                 
                 const nb = [...board];
                 let curr = actualStart;
-                let calculatedPoints = 0;
-                let wordMult = 1;
+                let pts = 0;
+                let wm = 1;
 
                 for(let i=0; i<wordStr.length; i++) {
-                    const letter = wordStr[i];
-                    const lVal = L_VALS[letter];
+                    const char = wordStr[i];
+                    const val = L_VALS[char];
                     if (!nb[curr]) {
                         let lm = 1;
                         if (DL.includes(curr)) lm = 2;
                         if (TL.includes(curr)) lm = 3;
-                        if (DW.includes(curr) || curr === 112) wordMult *= 2;
-                        if (TW.includes(curr)) wordMult *= 3;
-                        calculatedPoints += (lVal * lm);
-                        nb[curr] = letter;
-                    } else { calculatedPoints += lVal; }
+                        if (DW.includes(curr) || curr === 112) wm *= 2;
+                        if (TW.includes(curr)) wm *= 3;
+                        pts += (val * lm);
+                        nb[curr] = char;
+                    } else { pts += val; }
                     curr += step;
                 }
 
-                const bingoBonus = wordStr.length >= 7 ? 50 : 0;
-                const finalScore = (calculatedPoints * wordMult) + bingoBonus;
+                const bonus = wordStr.length >= 7 ? 50 : 0;
+                const finalPts = (pts * wm) + bonus;
                 
                 setBoard(nb);
                 setCursor(null);
                 
-                // --- PLACEMENT DELAY ---
+                // 1.5 SECOND DELAY BEFORE REVERTING
                 setTimeout(() => {
-                    if (bingoBonus > 0) setShowBingo(true);
-                    else finalizeTurn(wordStr, finalScore, nb);
-                }, 1200);
+                    if (bonus > 0) {
+                        setBingoData({w: wordStr, s: finalPts});
+                        setShowBingo(true);
+                    } else {
+                        finalize(wordStr, finalPts, nb);
+                    }
+                }, 1500);
             };
 
-            const finalizeTurn = (w, s, nextBoard) => {
+            const finalize = (w, s) => {
                 const nextScores = [...scores];
                 nextScores[activePlayer] = [{id: Date.now(), w, s}, ...nextScores[activePlayer]];
                 setScores(nextScores);
@@ -153,7 +151,7 @@
                 setWord("");
                 setIsValidWord(null);
                 setShowBingo(false);
-                setActivePlayer((prev) => (prev + 1) % playerNames.length);
+                setActivePlayer((p) => (p + 1) % playerNames.length);
                 setView('scores');
             };
 
@@ -167,9 +165,7 @@
             if (view === 'setup-count') return (
                 <div className="splash-screen" style={{padding:'40px', textAlign:'center'}}>
                     <h2>PLAYERS</h2>
-                    <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'20px'}}>
-                        {[2,3,4].map(n => <div key={n} style={{padding:'30px', border:'2px solid #c4a265', borderRadius:'12px', fontSize:'24px', fontWeight:900}} onClick={() => { setPlayerNames(new Array(n).fill("").map((_, i) => `PLAYER ${i+1}`)); setView('setup-names'); }}>{n}</div>)}
-                    </div>
+                    {[2,3,4].map(n => <button key={n} className="menu-btn btn-cont" onClick={() => { setPlayerNames(new Array(n).fill("").map((_, i) => `PLAYER ${i+1}`)); setView('setup-names'); }}>{n} PLAYERS</button>)}
                 </div>
             );
 
@@ -188,23 +184,23 @@
                     {showBingo && (
                         <div className="bingo-overlay">
                             <div className="bingo-card">
-                                <h2>BINGO!</h2>
-                                <p>You used 7 or more letters! A 50-point bonus has been added to your score.</p>
-                                <div className="rule-link" onClick={() => window.open('https://scrabble.hasbro.com/en-us/rules', '_blank')}>View Official Scrabble Rule 7</div>
-                                <button className="menu-btn btn-cont" onClick={() => finalizeTurn(scores[activePlayer][0]?.w, scores[activePlayer][0]?.s, board)}>CONTINUE</button>
+                                <h2 style={{fontFamily:'Orbitron', color:'#228B22', margin:0}}>BINGO!</h2>
+                                <p style={{fontWeight:600, margin:'15px 0'}}>You used 7+ letters. 50 bonus points added!</p>
+                                <div style={{color:'#3399ff', textDecoration:'underline', fontSize:'12px', marginBottom:'20px'}} onClick={() => window.open('https://scrabble.hasbro.com/en-us/rules', '_blank')}>Official Scrabble Rule 7</div>
+                                <button className="menu-btn btn-cont" onClick={() => finalize(bingoData.w, bingoData.s)}>CONTINUE</button>
                             </div>
                         </div>
                     )}
 
                     {view === 'scores' ? (
                         <>
-                            <div style={{display:'flex', justifyContent:'space-between'}}>
-                                <h1 style={{fontFamily:'Playfair Display'}}>REFEREE</h1>
-                                {history.length > 0 && <button onClick={() => { setBoard(history[0].board); setScores(history[0].scores); setHistory(history.slice(1)); }} style={{background:'none', color:'#ff4d4d', border:'none', fontWeight:900}}>UNDO</button>}
+                            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                                <h1 style={{fontFamily:'Playfair Display', margin:0}}>REFEREE</h1>
+                                {history.length > 0 && <button onClick={() => { setBoard(history[0].board); setScores(history[0].scores); setHistory(history.slice(1)); }} style={{background:'none', color:'#ff4d4d', border:'none', fontWeight:900, cursor:'pointer'}}>UNDO</button>}
                             </div>
-                            <div className="score-grid">
+                            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px', margin:'15px 0'}}>
                                 {playerNames.map((name, i) => (
-                                    <div key={i} className={`score-card ${activePlayer === i ? 'active' : ''}`}>
+                                    <div key={i} className={`score-card ${activePlayer === i ? 'active' : ''}`} style={{padding:'10px', border:'1px solid #333', borderRadius:'12px', textAlign:'center', background: activePlayer===i?'rgba(122,182,72,0.1)':'none'}}>
                                         <div style={{fontSize:'10px', color:'#c4a265'}}>{name}</div>
                                         <div style={{fontSize:'32px', fontWeight:900}}>{scores[i]?.reduce((a,b)=>a+b.s,0) || 0}</div>
                                     </div>
@@ -212,8 +208,8 @@
                             </div>
                             <input className={`scrabble-input ${isValidWord === true ? 'input-valid' : isValidWord === false ? 'input-invalid' : ''}`} value={word} onChange={e => setWord(e.target.value.toUpperCase())} placeholder="TYPE WORD" />
                             <button className="menu-btn btn-cont" onClick={() => { setPendingWord(word); setView('board'); }} disabled={!isValidWord}>PLACE WORD</button>
-                            <div className="word-log">
-                                <h3 style={{fontSize:'12px', color:'#c4a265'}}>PLACED WORDS</h3>
+                            <div style={{flex:1, overflowY:'auto', background:'rgba(0,0,0,0.2)', borderRadius:'10px', padding:'10px', marginTop:'15px'}}>
+                                <h3 style={{fontSize:'12px', color:'#c4a265', margin:'0 0 10px 0'}}>WORD LOG</h3>
                                 {scores[activePlayer]?.map(e => <div key={e.id} style={{display:'flex', justifyContent:'space-between', padding:'5px 0', borderBottom:'1px solid #222'}}><span>{e.w}</span><span>+{e.s}</span></div>)}
                             </div>
                         </>
@@ -223,9 +219,7 @@
                                 <div className="board-grid">
                                     {board.map((tile, i) => {
                                         const isHook = pendingWord && legalHooks.includes(i);
-                                        const showArrows = cursor === i && pendingWord;
                                         const isDL = DL.includes(i); const isTL = TL.includes(i);
-                                        
                                         let cellClass = i === 112 ? 'star' : TW.includes(i) ? 'tw' : DW.includes(i) ? 'dw' : TL.includes(i) ? 'tl' : DL.includes(i) ? 'dl' : '';
                                         let label = i === 112 ? '★' : TW.includes(i) ? '3W' : DW.includes(i) ? '2W' : TL.includes(i) ? '3L' : DL.includes(i) ? '2L' : '';
 
@@ -236,18 +230,18 @@
                                                         {tile}
                                                         <div className="tile-meta">
                                                             { (isDL || isTL || i === 112) ? (
-                                                                <div className="aug-wrap">
-                                                                    <span className="strike-pts">{L_VALS[tile]}</span>
-                                                                    <span className="new-pts">{isTL ? L_VALS[tile]*3 : L_VALS[tile]*2}</span>
-                                                                </div>
+                                                                <>
+                                                                    <span className="strike-ink">{L_VALS[tile]}</span>
+                                                                    <span className="new-pts-forest">{isTL ? L_VALS[tile]*3 : L_VALS[tile]*2}</span>
+                                                                </>
                                                             ) : <span className="base-pts">{L_VALS[tile]}</span> }
                                                         </div>
                                                     </div>
                                                 ) : label}
-                                                {showArrows && (
-                                                    <div style={{position:'absolute', z-index:100, display:'flex', gap:'5px', top:'-45px', left:'50%', transform:'translateX(-50%)'}}>
-                                                        <button onClick={() => executePlacement(i, 'right')} style={{background:'#c4a265', border:'none', borderRadius:'4px', padding:'8px', fontWeight:900}}>→</button>
-                                                        <button onClick={() => executePlacement(i, 'down')} style={{background:'#c4a265', border:'none', borderRadius:'4px', padding:'8px', fontWeight:900}}>↓</button>
+                                                {cursor === i && pendingWord && (
+                                                    <div style={{position:'absolute', zIndex:100, display:'flex', gap:'5px', top:'-45px'}}>
+                                                        <button onClick={() => executePlacement(i, 'right')} style={{background:'#c4a265', border:'none', borderRadius:'4px', padding:'8px', fontWeight:900, cursor:'pointer'}}>→</button>
+                                                        <button onClick={() => executePlacement(i, 'down')} style={{background:'#c4a265', border:'none', borderRadius:'4px', padding:'8px', fontWeight:900, cursor:'pointer'}}>↓</button>
                                                     </div>
                                                 )}
                                             </div>
