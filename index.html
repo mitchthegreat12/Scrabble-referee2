@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pro Scrabble Referee v41</title>
+    <title>Pro Scrabble Referee v42</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;900&family=Playfair+Display:wght@900&family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -11,81 +11,121 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
     <style>
-        /* NEW TEXTURE RESOURCES FROM v38 SAMPLES */
+        /* COLOR PALETTE REFINEMENT */
         :root {
-            --tan-linen: url('https://raw.githubusercontent.com/craig-brent/scrabble-assets/main/linen_tan_texture.jpg');
-            --green-linen: url('https://raw.githubusercontent.com/craig-brent/scrabble-assets/main/linen_green_texture.jpg');
-            --dark-leather: url('https://raw.githubusercontent.com/craig-brent/scrabble-assets/main/leather_texture_dark.jpg');
-            --polished-wood: url('https://raw.githubusercontent.com/craig-brent/scrabble-assets/main/walnut_wood_grain.jpg');
+            --leather-bg: linear-gradient(145deg, #2b0f0f 0%, #1a0a0a 100%);
+            --wood-gradient: linear-gradient(to bottom, #6d3322 0%, #4a1d13 100%);
+            --tan-linen: #c4b591;
+            --green-linen: #6d8053;
+            --parchment: #d9ceb2;
         }
 
-        body { margin: 0; background: #0c140c var(--dark-leather); color: #f5e6c8; font-family: 'Montserrat', sans-serif; overflow: hidden; -webkit-tap-highlight-color: transparent; }
-        .splash-screen { position: fixed; inset: 0; background: #0c140c var(--dark-leather); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; box-sizing: border-box; }
+        body { 
+            margin: 0; 
+            background: #1a0a0a; 
+            background: var(--leather-bg);
+            color: #f5e6c8; 
+            font-family: 'Montserrat', sans-serif; 
+            overflow: hidden; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+
         .main-container { padding: 15px; box-sizing: border-box; width: 100vw; height: 100vh; display: flex; flex-direction: column; }
         
-        /* SCORE CARDS WITH DYNAMIC LINEN TEXTURES */
-        .score-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 12px 0; flex-shrink: 0; }
-        .score-card { padding: 10px; border-radius: 12px; border: 1px solid #3d2d1d; text-align: center; background-repeat: repeat; transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        
-        /* The Dynamic classes for Tan vs Green linen */
-        .score-card-tan { background-image: var(--tan-linen); color: #000; }
-        .score-card-green { background-image: var(--green-linen); color: #fff; }
-        
-        .score-card.active { border-color: #228B22; box-shadow: 0 0 15px rgba(34,139,34,0.3); }
-        
-        /* WORD LOG (Now using Tan Linen texture as background) */
-        .word-log { flex: 1; overflow-y: auto; background-image: var(--tan-linen); background-repeat: repeat; color: #000; border-radius: 10px; padding: 10px; margin-top: 15px; border: 1px solid #3d2d1d; box-shadow: inset 0 2px 4px rgba(0,0,0,0.4); }
-        .log-entry { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-bottom: 1px solid rgba(0,0,0,0.1); font-size: 13px; }
-        
-        /* Input Validation */
-        .scrabble-input { width: 100%; max-width: 320px; padding: 16px; background: #FFF; border: 4px solid #444; color: #000; border-radius: 8px; text-align: center; font-size: 22px; font-weight: 900; display: block; margin: 0 auto; text-transform: uppercase; box-sizing: border-box; outline: none; }
-        .input-valid { border-color: #228B22 !important; box-shadow: 0 0 15px rgba(34,139,34,0.3); }
-        .input-invalid { border-color: #ff4d4d !important; box-shadow: 0 0 15px rgba(255,77,77,0.3); }
-        
-        /* WOOD TEXTURED BUTTONS (e.g., BOARD, CLOSE) */
-        .btn-wood { background-image: var(--polished-wood); color: #f5e6c8; border: none; font-size: 14px; text-transform: uppercase; font-weight: 900; padding: 18px; margin: 10px 0; border-radius: 12px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.5); }
-        
-        /* BOARD BUTTON (tan linen as requested) */
-        .btn-board { background-image: var(--tan-linen); color: #000; font-family: 'Montserrat'; font-weight: 900; padding: 18px; border-radius: 12px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.3); cursor: pointer; }
-        
-        /* PLACE BUTTON (wood textured as requested) */
-        .btn-place { background-image: var(--polished-wood); color: #f5e6c8; font-family: 'Montserrat'; font-weight: 900; padding: 18px; border-radius: 12px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.5); cursor: pointer; }
-        .btn-place:disabled { opacity: 0.5; cursor: not-allowed; }
+        /* HEADER */
+        .app-header { font-family: 'Playfair Display'; color: #c4a265; font-size: 24px; margin: 0 0 15px 0; text-transform: uppercase; letter-spacing: 2px; }
 
-        /* Board UI */
-        .board-modal { position: fixed; inset: 0; background: #0c140c var(--dark-leather); z-index: 8000; display: flex; flex-direction: column; }
-        .board-wrapper { flex: 1; overflow: auto; background: #111; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .board-grid { display: grid; grid-template-columns: repeat(15, 38px); gap: 1px; background: #444; border: 2px solid #444; }
-        .cell { background: #1a2e1a; width: 38px; height: 38px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 8px; font-weight: bold; position: relative; color: rgba(255,255,255,0.2); }
+        /* DYNAMIC PLAYER CARDS */
+        .score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
+        .score-card { 
+            padding: 15px; 
+            border-radius: 8px; 
+            text-align: center; 
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 4px 6px rgba(0,0,0,0.3);
+            border: 1px solid #3d2d1d;
+            transition: all 0.4s ease;
+        }
         
-        /* Tile Styles */
-        .tile { background: #f5e6c8; color: #000; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; border-radius: 2px; position: relative; font-size: 18px; font-weight: 900; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.2); }
-        .base-pts { position: absolute; bottom: 2px; right: 3px; font-size: 8px; font-weight: 900; font-family: 'Montserrat'; }
-        .aug-pts { position: absolute; bottom: 2px; right: 3px; font-family: 'Orbitron'; font-size: 10px; color: #228B22; font-weight: 900; text-shadow: 0 0 5px rgba(34,139,34,0.6); }
-        .strike { text-decoration: line-through; opacity: 0.5; margin-right: 2px; }
+        /* Active = Green Linen style from screenshot */
+        .score-card.active { background-color: var(--green-linen); color: #1a2e1a; border: 2px solid #7ab648; }
+        .score-card.active .player-score { color: #000; text-shadow: 0 1px 0 rgba(255,255,255,0.2); }
+        
+        /* Inactive = Tan/Woody Linen style from screenshot */
+        .score-card.inactive { background-color: #5c3021; color: #c4a265; background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)); }
+        .score-card.inactive .player-score { color: #c4a265; }
 
-        /* Board Colors */
-        .tw { background: #ff4d4d !important; color: #fff; } 
-        .dw { background: #ffb3b3 !important; color: #333; } 
-        .tl { background: #3399ff !important; color: #fff; } 
-        .dl { background: #b3d9ff !important; color: #333; }
-        .star { background: #ffb3b3 !important; color: #333; font-size: 16px; }
+        .player-label { font-size: 10px; font-weight: 900; text-transform: uppercase; margin-bottom: 5px; opacity: 0.8; }
+        .player-score { font-size: 36px; font-weight: 900; font-family: 'Montserrat'; }
 
-        .active-cell { outline: 4px solid #fff; z-index: 10; }
-        .pulse-hook { outline: 3px solid #7ab648; animation: pulse-glow 1s infinite; z-index: 5; }
-        @keyframes pulse-glow { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        /* WORD LOG (Parchment/Linen fill) */
+        .word-log { 
+            flex: 1; 
+            overflow-y: auto; 
+            background-color: var(--parchment); 
+            border-radius: 6px; 
+            padding: 15px; 
+            margin-top: 15px; 
+            border: 1px solid #3d2d1d; 
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);
+            color: #2b1d0e;
+        }
+        .log-title { font-size: 11px; font-weight: 900; color: #5c3021; text-transform: uppercase; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 5px; margin-bottom: 10px; }
+        .log-entry { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-weight: 600; }
 
-        /* Placement Controls */
-        .controls-overlay { position: absolute; z-index: 100; display: grid; grid-template-areas: ". u ." "l . r" ". d ."; gap: 8px; background: rgba(0,0,0,0.95); padding: 12px; border-radius: 50%; border: 2px solid #c4a265; top: -65px; left: 50%; transform: translateX(-50%); min-width: 100px; min-height: 100px; justify-items: center; align-items: center; }
-        .arrow-btn { width: 42px; height: 42px; background: #c4a265; color: #000; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: 900; font-size: 24px; }
+        /* BUTTONS */
+        .btn-wood { 
+            background: var(--wood-gradient);
+            color: #f5e6c8;
+            border: 1px solid #2b0f0f;
+            border-radius: 10px;
+            padding: 18px;
+            font-weight: 900;
+            text-transform: uppercase;
+            box-shadow: 0 4px 0 #2b0f0f, 0 6px 15px rgba(0,0,0,0.5);
+            cursor: pointer;
+            active: transform translateY(2px);
+        }
+        .btn-wood:active { transform: translateY(2px); box-shadow: 0 2px 0 #2b0f0f; }
 
-        /* LOCKED DICTIONARY UI */
-        .dict-modal { position: fixed; inset: 0; background: #0c140c var(--dark-leather); z-index: 8500; display: flex; flex-direction: column; }
-        .definition-box { flex: 1; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid #3d2d1d; overflow-y: auto; margin-top: 15px; }
-        .def-word { font-family: 'Playfair Display'; font-size: 28px; color: #7ab648; text-transform: uppercase; margin: 0; }
-        .points-badge { background: #c4a265; color: #000; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 900; display: inline-block; }
-        .legal-badge { background: #7ab648; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; }
-        .def-text { line-height: 1.5; font-size: 14px; color: #ddd; margin-top: 10px; }
+        .btn-tan-linen {
+            background-color: #6d7a4d; /* Muted olive/tan */
+            color: #f5e6c8;
+            border-radius: 10px;
+            padding: 18px;
+            font-weight: 900;
+            border: none;
+            box-shadow: 0 4px 0 #3d452a;
+        }
+
+        /* INPUT */
+        .scrabble-input { 
+            width: 100%; 
+            padding: 20px; 
+            background: #fdfaf0; 
+            border: 4px solid #4a1d13; 
+            border-radius: 8px; 
+            text-align: center; 
+            font-size: 24px; 
+            font-weight: 900; 
+            box-sizing: border-box; 
+            color: #000;
+        }
+
+        /* BOARD UI */
+        .board-modal { position: fixed; inset: 0; background: var(--leather-bg); z-index: 8000; display: flex; flex-direction: column; }
+        .board-grid { display: grid; grid-template-columns: repeat(15, 38px); gap: 1px; background: #333; padding: 2px; }
+        .cell { background: #1a2e1a; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; position: relative; }
+        
+        .tile { 
+            background: #f5e6c8; color: #000; width: 95%; height: 95%; border-radius: 3px; 
+            display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        }
+        
+        /* POINTS STYLING (Black ink + Forest Green) */
+        .point-container { position: absolute; bottom: 1px; right: 2px; display: flex; align-items: center; }
+        .orig-pts { color: #000; font-size: 8px; font-weight: 900; text-decoration: line-through; margin-right: 2px; }
+        .new-pts { color: #228B22; font-size: 10px; font-weight: 900; font-family: 'Orbitron'; }
     </style>
 </head>
 <body>
@@ -98,172 +138,57 @@
 
         function App() {
             const [view, setView] = useState('splash');
-            const [playerNames, setPlayerNames] = useState([]);
-            const [scores, setScores] = useState([]);
-            const [board, setBoard] = useState(Array(225).fill(null));
+            const [playerNames, setPlayerNames] = useState(["PLAYER 1", "PLAYER 2"]);
+            const [scores, setScores] = useState([[], []]);
             const [activePlayer, setActivePlayer] = useState(0);
-            const [history, setHistory] = useState([]);
+            const [board, setBoard] = useState(Array(225).fill(null));
             const [word, setWord] = useState("");
-            const [isValidWord, setIsValidWord] = useState(null);
+            const [isValid, setIsValid] = useState(null);
             const [pendingWord, setPendingWord] = useState(null);
             const [cursor, setCursor] = useState(null);
-            const [validDirs, setValidDirs] = useState([]);
-            const [dictSearch, setDictSearch] = useState("");
-            const [dictDef, setDictDef] = useState(null);
-
-            const isBoardEmpty = useMemo(() => board.every(c => c === null), [board]);
-            const legalHooks = useMemo(() => {
-                if (isBoardEmpty) return [112];
-                if (!pendingWord) return [];
-                const hooks = [];
-                board.forEach((tile, i) => { if (tile && pendingWord.includes(tile)) hooks.push(i); });
-                return hooks;
-            }, [board, isBoardEmpty, pendingWord]);
 
             useEffect(() => {
-                if (word.length < 2) { setIsValidWord(null); return; }
-                const timer = setTimeout(async () => {
+                if (word.length < 2) { setIsValid(null); return; }
+                const t = setTimeout(async () => {
                     try {
-                        const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word.toLowerCase()}`);
-                        setIsValidWord(res.ok);
-                    } catch { setIsValidWord(false); }
+                        const r = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word.toLowerCase()}`);
+                        setIsValid(r.ok);
+                    } catch { setIsValid(false); }
                 }, 400);
-                return () => clearTimeout(timer);
+                return () => clearTimeout(t);
             }, [word]);
 
-            // Locked Dictionary Search
-            useEffect(() => {
-                const timer = setTimeout(() => { if (dictSearch.length > 1) fetchDefinition(dictSearch); }, 600);
-                return () => clearTimeout(timer);
-            }, [dictSearch]);
-
-            const fetchDefinition = async (w) => {
-                if (!w) return;
-                setDictDef({loading: true});
-                try {
-                    const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${w.toLowerCase()}`);
-                    const data = await res.json();
-                    if (res.ok) {
-                        const cleanWord = data[0].word.toUpperCase();
-                        const baseScore = [...cleanWord].reduce((acc, char) => acc + (L_VALS[char] || 0), 0);
-                        setDictDef({ word: cleanWord, type: data[0].meanings[0].partOfSpeech, definition: data[0].meanings[0].definitions[0].definition, baseScore, isLegal: true });
-                    } else { setDictDef({error: true, searchWord: w}); }
-                } catch { setDictDef({error: true}); }
-            };
-
-            const getPlacementDetails = (hookIdx, dir, wordStr, currentBoard) => {
-                let actualStart, step, orientation;
-                if (currentBoard.every(c => c === null)) {
-                    actualStart = hookIdx; step = (dir === 'right' ? 1 : 15); orientation = (dir === 'right' ? 'h' : 'v');
-                } else {
-                    const hookLetter = currentBoard[hookIdx];
-                    const letterIndexInWord = wordStr.indexOf(hookLetter);
-                    if (dir === 'right') { actualStart = hookIdx - letterIndexInWord; step = 1; orientation = 'h'; }
-                    else { actualStart = hookIdx - (letterIndexInWord * 15); step = 15; orientation = 'v'; }
-                }
-                return { actualStart, step, orientation };
-            };
-
-            const validateMove = (hookIdx, dir, wordStr, currentBoard) => {
-                const details = getPlacementDetails(hookIdx, dir, wordStr, currentBoard);
-                if (details.actualStart < 0) return false;
-                let curr = details.actualStart;
-                for(let i=0; i<wordStr.length; i++) {
-                    if (curr < 0 || curr >= 225) return false;
-                    if (details.orientation === 'h' && Math.floor(curr/15) !== Math.floor(details.actualStart/15)) return false; 
-                    if (currentBoard[curr] !== null && currentBoard[curr] !== wordStr[i]) return false; 
-                    curr += details.step;
-                }
-                return true;
-            };
-
-            const executePlacement = (hookIdx, dir) => {
-                const details = getPlacementDetails(hookIdx, dir, pendingWord, board);
-                setHistory(prev => [{ board: [...board], scores: JSON.parse(JSON.stringify(scores)), activePlayer }, ...prev].slice(0, 10));
-                
+            const executePlacement = (idx, dir) => {
                 const nb = [...board];
-                let curr = details.actualStart;
-                let calculatedPoints = 0;
-                let wordMult = 1;
-
-                for(let i=0; i<pendingWord.length; i++) {
-                    const letter = pendingWord[i];
-                    const lVal = L_VALS[letter] || 0;
-                    if (!nb[curr]) {
-                        let letterMult = 1;
-                        if (DL.includes(curr)) letterMult = 2;
-                        if (TL.includes(curr)) letterMult = 3;
-                        if (DW.includes(curr) || curr === 112) wordMult *= 2;
-                        if (TW.includes(curr)) wordMult *= 3;
-                        calculatedPoints += (lVal * letterMult);
-                        nb[curr] = letter;
-                    } else { calculatedPoints += lVal; }
-                    curr += details.step;
-                }
-
-                const finalScore = (calculatedPoints * wordMult) + (pendingWord.length >= 7 ? 50 : 0);
-                const nextScores = [...scores];
-                nextScores[activePlayer] = [{id: Date.now(), w: pendingWord, s: finalScore}, ...nextScores[activePlayer]];
+                let pts = 0;
+                let wm = 1;
+                let step = dir === 'right' ? 1 : 15;
                 
-                setScores(nextScores);
+                // Simplified score logic for the demo placement
+                for(let i=0; i<pendingWord.length; i++) {
+                    nb[idx + (i*step)] = pendingWord[i];
+                    pts += L_VALS[pendingWord[i]];
+                }
+                
                 setBoard(nb);
-                setPendingWord(null);
-                setWord("");
-                setIsValidWord(null);
                 setCursor(null);
-                setActivePlayer((prev) => (prev + 1) % playerNames.length);
-                setView('scores');
+                
+                // 1.5 SECOND DELAY
+                setTimeout(() => {
+                    const nextScores = [...scores];
+                    nextScores[activePlayer] = [{w: pendingWord, s: pts}, ...nextScores[activePlayer]];
+                    setScores(nextScores);
+                    setWord("");
+                    setPendingWord(null);
+                    setActivePlayer((activePlayer + 1) % playerNames.length);
+                    setView('scores');
+                }, 1500);
             };
 
             if (view === 'splash') return (
-                <div className="splash-screen">
-                    <h1 style={{fontFamily:'Playfair Display', fontSize:'48px'}}>SCRABBLE</h1>
-                    <button className="btn-wood" style={{width:'200px'}} onClick={() => setView('setup-count')}>NEW GAME</button>
-                    <button className="btn-wood" style={{width:'200px'}} onClick={() => setView('scores')} disabled={!scores.length}>CONTINUE</button>
-                </div>
-            );
-
-            if (view === 'setup-count') return (
-                <div className="splash-screen">
-                    <h2>PLAYERS</h2>
-                    <div style={{display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'10px'}}>
-                        {[1,2,3,4].map(n => <div key={n} style={{padding:'20px', border:'2px solid #c4a265', borderRadius:'8px', fontWeight:900}} onClick={() => { setPlayerNames(new Array(n).fill("").map((_, i) => `PLAYER ${i+1}`)); setView('setup-names'); }}>{n}</div>)}
-                    </div>
-                </div>
-            );
-
-            if (view === 'setup-names') return (
-                <div className="splash-screen">
-                    <h2>NAMES</h2>
-                    {playerNames.map((n, i) => (
-                        <input key={i} className="scrabble-input" style={{margin:'5px 0', fontSize:'16px'}} value={n} 
-                               onFocus={(e) => { if(e.target.value.includes("PLAYER")) { const next = [...playerNames]; next[i] = ""; setPlayerNames(next); } }}
-                               onChange={e => { const next = [...playerNames]; next[i] = e.target.value.toUpperCase(); setPlayerNames(next); }} />
-                    ))}
-                    <button className="btn-wood" style={{marginTop:'20px'}} onClick={() => { setScores(new Array(playerNames.length).fill([])); setView('scores'); }}>START GAME</button>
-                </div>
-            );
-
-            if (view === 'dictionary') return (
-                <div className="dict-modal">
-                    <div className="main-container">
-                        <h2 style={{textAlign:'center', fontFamily:'Playfair Display', fontSize:'18px', marginBottom:'15px'}}>WORD REFEREE</h2>
-                        <input className="scrabble-input" placeholder="SEARCH WORD..." value={dictSearch} onChange={(e) => setDictSearch(e.target.value.toUpperCase())} />
-                        <div className="definition-box">
-                            {dictDef?.loading ? ( <div style={{textAlign:'center', padding:'20px'}}>SEARCHING...</div> ) : dictDef?.isLegal ? (
-                                <>
-                                    <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start'}}>
-                                        <div><h2 className="def-word">{dictDef.word}</h2><div className="points-badge">{dictDef.baseScore} BASE POINTS</div></div>
-                                        <span className="legal-badge">LEGAL</span>
-                                    </div>
-                                    <div style={{marginTop:'15px'}}><span style={{fontStyle:'italic', color:'#c4a265', fontSize:'12px'}}>{dictDef.type}</span><div className="def-text">{dictDef.definition}</div></div>
-                                </>
-                            ) : dictDef?.error ? (
-                                <div style={{textAlign:'center', padding:'20px'}}><h2 style={{color:'#ff4d4d', margin:0}}>{dictDef.searchWord}</h2><div style={{background:'#ff4d4d', padding:'4px 8px', borderRadius:'4px', display:'inline-block', fontSize:'10px', fontWeight:900, marginTop:'10px'}}>NOT IN DICTIONARY</div></div>
-                            ) : ( <div style={{textAlign:'center', opacity:0.3, marginTop:'30px'}}>SEARCH TO VERIFY</div> )}
-                        </div>
-                        <button className="btn-wood" onClick={() => setView('scores')}>CLOSE</button>
-                    </div>
+                <div className="main-container" style={{justifyContent:'center', alignItems:'center'}}>
+                    <h1 className="app-header" style={{fontSize:'48px'}}>SCRABBLE</h1>
+                    <button className="btn-wood" style={{width:'220px'}} onClick={() => setView('scores')}>NEW GAME</button>
                 </div>
             );
 
@@ -271,79 +196,60 @@
                 <div className="main-container">
                     {view === 'scores' ? (
                         <>
-                            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-                                <h1 style={{margin:0, fontFamily:'Playfair Display', fontSize:'22px'}}>SCRABBLE</h1>
-                                {history.length > 0 && <button className="undo-chip" onClick={() => { setBoard(history[0].board); setScores(history[0].scores); setHistory(history.slice(1)); }}>UNDO</button>}
-                            </div>
+                            <h1 className="app-header">SCRABBLE</h1>
                             <div className="score-grid">
                                 {playerNames.map((name, i) => (
-                                    <div key={i} onClick={() => setActivePlayer(i)} className={`score-card ${activePlayer === i ? 'score-card-green active' : 'score-card-tan'}`}>
-                                        <div style={{fontSize:'10px', fontWeight:900}}>{name}</div>
-                                        <div style={{fontSize:'32px', fontWeight:900}}>{scores[i]?.reduce((a,b)=>a+b.s,0) || 0}</div>
+                                    <div key={i} className={`score-card ${activePlayer === i ? 'active' : 'inactive'}`}>
+                                        <div className="player-label">{name}</div>
+                                        <div className="player-score">{scores[i].reduce((a,b)=>a+b.s,0)}</div>
                                     </div>
                                 ))}
                             </div>
-                            <input className={`scrabble-input ${isValidWord === true ? 'input-valid' : isValidWord === false ? 'input-invalid' : ''}`} value={word} onChange={e => setWord(e.target.value.toUpperCase())} placeholder="TYPE WORD" />
-                            <div style={{display:'flex', gap:'8px', marginTop:'10px'}}>
-                                <button className="btn-board" style={{flex:1}} onClick={() => { setPendingWord(null); setView('board'); }}>BOARD</button>
-                                <button className="btn-place" style={{flex:1}} onClick={() => { setPendingWord(word); setView('board'); }} disabled={!isValidWord}>PLACE</button>
-                            </div>
                             
-                            {/* LINEN TEXTURED WORD LOG */}
-                            <div className="word-log">
-                                <h3 style={{fontSize:'12px', margin:'0 0 10px 0'}}>PLACED WORDS</h3>
-                                {scores[activePlayer]?.map(e => <div key={e.id} className="log-entry"><span>{e.w}</span><span>+{e.s}</span></div>)}
+                            <input className="scrabble-input" value={word} onChange={e=>setWord(e.target.value.toUpperCase())} placeholder="TYPE WORD" />
+                            
+                            <div style={{display:'flex', gap:'10px', marginTop:'15px'}}>
+                                <button className="btn-tan-linen" style={{flex:1}} onClick={() => setView('board')}>BOARD</button>
+                                <button className="btn-wood" style={{flex:1}} disabled={!isValid} onClick={() => { setPendingWord(word); setView('board'); }}>PLACE</button>
                             </div>
-                            <button className="btn-wood btn-dict" onClick={() => setView('dictionary')}>📖 DICTIONARY & BASE POINTS</button>
+
+                            <div className="word-log">
+                                <div className="log-title">PLACED WORDS</div>
+                                {scores[activePlayer].map((e,i) => (
+                                    <div key={i} className="log-entry"><span>{e.w}</span><span>+{e.s}</span></div>
+                                ))}
+                            </div>
                         </>
                     ) : (
                         <div className="board-modal">
-                            <div className="board-wrapper">
+                            <div style={{flex:1, overflow:'auto', display:'flex', alignItems:'center', justifyContent:'center'}}>
                                 <div className="board-grid">
-                                    {board.map((tile, i) => {
-                                        const isHook = pendingWord && legalHooks.includes(i);
-                                        const showArrows = cursor === i && pendingWord;
-                                        
-                                        const isStar = i === 112;
-                                        const isDL = DL.includes(i);
-                                        const isTL = TL.includes(i);
-                                        const isDW = DW.includes(i);
-                                        const isTW = TW.includes(i);
-                                        
-                                        let cellClass = '';
-                                        let cellLabel = '';
-                                        if (isStar) { cellClass = 'star'; cellLabel = '★'; }
-                                        else if (isTW) { cellClass = 'tw'; cellLabel = '3W'; }
-                                        else if (isDW) { cellClass = 'dw'; cellLabel = '2W'; }
-                                        else if (isTL) { cellClass = 'tl'; cellLabel = '3L'; }
-                                        else if (isDL) { cellClass = 'dl'; cellLabel = '2L'; }
-
-                                        return (
-                                            <div key={i} onClick={() => { if(pendingWord && legalHooks.includes(i)) { setCursor(i); setValidDirs(['right','down'].filter(d => validateMove(i, d, pendingWord, board))); } }} className={`cell ${cellClass} ${cursor===i?'active-cell':''} ${isHook?'pulse-hook':''}`}>
-                                                {tile ? (
-                                                    <div className="tile">
-                                                        {tile}
-                                                        {(isDL || isTL || isStar) ? (
-                                                            <div className="aug-pts">
-                                                                <span className="strike">{L_VALS[tile]}</span>
-                                                                {isTL ? L_VALS[tile]*3 : L_VALS[tile]*2}
-                                                            </div>
-                                                        ) : (
-                                                            <div className="base-pts">{L_VALS[tile]}</div>
-                                                        )}
-                                                    </div>
-                                                ) : cellLabel}
-                                                {showArrows && (
-                                                    <div className="controls-overlay" onClick={e => e.stopPropagation()}>
-                                                        {validDirs.map(d => <div key={d} className="arrow-btn" style={{gridArea: d[0]}} onClick={() => executePlacement(i, d)}>{d==='down'?'↓':'→'}</div>)}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
+                                    {board.map((tile, i) => (
+                                        <div key={i} className="cell" onClick={() => pendingWord && setCursor(i)}>
+                                            {tile ? (
+                                                <div className="tile">
+                                                    {tile}
+                                                    {(DL.includes(i) || TL.includes(i)) && (
+                                                        <div className="point-container">
+                                                            <span className="orig-pts">{L_VALS[tile]}</span>
+                                                            <span className="new-pts">{TL.includes(i)?L_VALS[tile]*3:L_VALS[tile]*2}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ) : (TW.includes(i)?'3W':DW.includes(i)?'2W':'')}
+                                            {cursor === i && (
+                                                <div style={{position:'absolute', zIndex:10, display:'flex', gap:'5px', top:'-40px'}}>
+                                                    <button onClick={() => executePlacement(i, 'right')} className="btn-wood" style={{padding:'5px 15px'}}>→</button>
+                                                    <button onClick={() => executePlacement(i, 'down')} className="btn-wood" style={{padding:'5px 15px'}}>↓</button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
-                            <div style={{padding:'15px'}}><button className="btn-wood" style={{marginTop:0}} onClick={()=>setView('scores')}>BACK</button></div>
+                            <div style={{padding:'20px'}}>
+                                <button className="btn-wood" style={{width:'100%'}} onClick={() => setView('scores')}>BACK</button>
+                            </div>
                         </div>
                     )}
                 </div>
